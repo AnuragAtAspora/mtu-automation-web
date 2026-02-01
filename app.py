@@ -33,6 +33,7 @@ GOOGLE_SHEET_ID = "1A30FfO319eiKW0c6zHj2lwr04WLE0fL6eLteZf4CvHM"
 class MTUWebAutomation:
     def __init__(self):
         self.created_segments = []
+        # Don't initialize Google Sheets in constructor to avoid blocking the app
     
     def get_date_range(self, end_date_str):
         """Get date range from month start to selected date"""
@@ -364,6 +365,7 @@ def calculate_mtu():
                 update_google_sheets(results, period_info)
                 sheets_updated = True
         except Exception as e:
+            print(f"Warning: Could not update Google Sheets: {str(e)}")
             flash(f'Warning: Could not update Google Sheets: {str(e)}', 'warning')
         
         return render_template('mtu_results.html', 
@@ -435,13 +437,13 @@ def update_google_sheets(results, period_info):
     credentials_json = os.environ.get('GOOGLE_CREDENTIALS_JSON')
     if credentials_json:
         # Production: Load from environment variable
-        import json
-        from google.oauth2.service_account import Credentials
         credentials_info = json.loads(credentials_json)
         creds = Credentials.from_service_account_info(credentials_info, scopes=scope)
-    else:
+    elif os.path.exists('google_credentials.json'):
         # Development: Load from file
         creds = Credentials.from_service_account_file('google_credentials.json', scopes=scope)
+    else:
+        raise Exception("No Google credentials found. Please set GOOGLE_CREDENTIALS_JSON environment variable or add google_credentials.json file.")
     
     # Authorize the client
     gc = gspread.authorize(creds)
