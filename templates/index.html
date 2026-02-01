@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}MTU Automation - Home{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    Create MTU Segments
+                </h4>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">
+                    Enter the end date for your MTU calculation period. This will create all required segments in MoEngage 
+                    for both UK and UAE markets, including active users, push/email recipients, and combined segments.
+                </p>
+                
+                <form method="POST" action="{{ url_for('create_segments') }}">
+                    <div class="mb-4">
+                        <label for="end_date" class="form-label">
+                            <i class="fas fa-calendar me-2"></i>End Date for MTU Period
+                        </label>
+                        <input type="date" 
+                               class="form-control form-control-lg" 
+                               id="end_date" 
+                               name="end_date" 
+                               required
+                               max="{{ (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d') }}">
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Select the last day of your analysis period. Segments will be created from the 1st of that month to your selected date.
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-list me-2"></i>What will be created:</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>UK Segments (6):</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li>All UK Users</li>
+                                    <li>Active UK Users (60d)</li>
+                                    <li>UK Push Recipients</li>
+                                    <li>UK Push Recipients (Active)</li>
+                                    <li>UK Email Recipients</li>
+                                    <li>UK Email Recipients (Active)</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>UAE Segments (6):</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li>All UAE Users</li>
+                                    <li>Active UAE Users (60d)</li>
+                                    <li>UAE Push Recipients</li>
+                                    <li>UAE Push Recipients (Active)</li>
+                                    <li>UAE Email Recipients</li>
+                                    <li>UAE Email Recipients (Active)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-rocket me-2"></i>
+                            Create MTU Segments
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-route me-2"></i>
+                    Complete Workflow
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-plus-circle fa-3x text-primary"></i>
+                        </div>
+                        <h6>Step 1: Create Segments</h6>
+                        <p class="text-muted small">Use the form above to create all required segments in MoEngage</p>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-search fa-3x text-warning"></i>
+                        </div>
+                        <h6>Step 2: Get Counts</h6>
+                        <p class="text-muted small">Visit MoEngage dashboard to collect user counts for each segment</p>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-calculator fa-3x text-success"></i>
+                        </div>
+                        <h6>Step 3: Calculate MTU</h6>
+                        <p class="text-muted small">Enter counts to calculate MTU percentages and update Google Sheets</p>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('calculate_mtu_form') }}" class="btn btn-outline-success">
+                        <i class="fas fa-arrow-right me-2"></i>
+                        Skip to MTU Calculator
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Set default date to yesterday
+document.addEventListener('DOMContentLoaded', function() {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const dateString = yesterday.toISOString().split('T')[0];
+    document.getElementById('end_date').value = dateString;
+});
+</script>
+{% endblock %}

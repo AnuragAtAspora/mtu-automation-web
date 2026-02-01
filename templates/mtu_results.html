@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}MTU Results{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="alert alert-success">
+            <h4><i class="fas fa-check-circle me-2"></i>MTU Calculation Complete!</h4>
+            <p class="mb-0">
+                Results calculated for period: <strong>{{ period }}</strong>
+                {% if sheets_updated %}
+                <br><i class="fas fa-table me-1"></i>Google Sheets updated successfully!
+                {% endif %}
+            </p>
+        </div>
+        
+        <!-- Results Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-flag me-2"></i>UK Results
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h3 class="text-primary">{{ results.UK.push_mtu }}%</h3>
+                                <small class="text-muted">Push MTU</small>
+                            </div>
+                            <div class="col-6">
+                                <h3 class="text-success">{{ results.UK.email_mtu }}%</h3>
+                                <small class="text-muted">Email MTU</small>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>All Users:</strong> {{ "{:,}".format(results.UK.all_users) }}
+                            </div>
+                            <div class="col-6">
+                                <strong>Active:</strong> {{ "{:,}".format(results.UK.active_users) }} ({{ results.UK.active_percentage }}%)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-flag me-2"></i>UAE Results
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h3 class="text-primary">{{ results.UAE.push_mtu }}%</h3>
+                                <small class="text-muted">Push MTU</small>
+                            </div>
+                            <div class="col-6">
+                                <h3 class="text-success">{{ results.UAE.email_mtu }}%</h3>
+                                <small class="text-muted">Email MTU</small>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>All Users:</strong> {{ "{:,}".format(results.UAE.all_users) }}
+                            </div>
+                            <div class="col-6">
+                                <strong>Active:</strong> {{ "{:,}".format(results.UAE.active_users) }} ({{ results.UAE.active_percentage }}%)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Detailed Results Table -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-table me-2"></i>
+                    Detailed MTU Analysis
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Metric</th>
+                                <th class="text-center">UK</th>
+                                <th class="text-center">UAE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>All Users</strong></td>
+                                <td class="text-center">{{ "{:,}".format(results.UK.all_users) }}</td>
+                                <td class="text-center">{{ "{:,}".format(results.UAE.all_users) }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Active Users (60d)</strong></td>
+                                <td class="text-center">{{ "{:,}".format(results.UK.active_users) }}</td>
+                                <td class="text-center">{{ "{:,}".format(results.UAE.active_users) }}</td>
+                            </tr>
+                            <tr class="table-warning">
+                                <td><strong>Active %</strong></td>
+                                <td class="text-center"><strong>{{ results.UK.active_percentage }}%</strong></td>
+                                <td class="text-center"><strong>{{ results.UAE.active_percentage }}%</strong></td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="table-secondary"><strong>Push Notifications</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Push Received</td>
+                                <td class="text-center">{{ "{:,}".format(results.UK.push_received) }}</td>
+                                <td class="text-center">{{ "{:,}".format(results.UAE.push_received) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Push Received (Active)</td>
+                                <td class="text-center">{{ "{:,}".format(results.UK.push_received_active) }}</td>
+                                <td class="text-center">{{ "{:,}".format(results.UAE.push_received_active) }}</td>
+                            </tr>
+                            <tr class="table-primary">
+                                <td><strong>Push MTU %</strong></td>
+                                <td class="text-center"><strong>{{ results.UK.push_mtu }}%</strong></td>
+                                <td class="text-center"><strong>{{ results.UAE.push_mtu }}%</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Push Reach %</td>
+                                <td class="text-center">{{ results.UK.push_reach }}%</td>
+                                <td class="text-center">{{ results.UAE.push_reach }}%</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="table-secondary"><strong>Email Campaigns</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Email Received</td>
+                                <td class="text-center">{{ "{:,}".format(results.UK.email_received) }}</td>
+                                <td class="text-center">{{ "{:,}".format(results.UAE.email_received) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Email Received (Active)</td>
+                                <td class="text-center">{{ "{:,}".format(results.UK.email_received_active) }}</td>
+                                <td class="text-center">{{ "{:,}".format(results.UAE.email_received_active) }}</td>
+                            </tr>
+                            <tr class="table-success">
+                                <td><strong>Email MTU %</strong></td>
+                                <td class="text-center"><strong>{{ results.UK.email_mtu }}%</strong></td>
+                                <td class="text-center"><strong>{{ results.UAE.email_mtu }}%</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Email Reach %</td>
+                                <td class="text-center">{{ results.UAE.email_reach }}%</td>
+                                <td class="text-center">{{ results.UAE.email_reach }}%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="card mt-4">
+            <div class="card-body text-center">
+                <div class="row">
+                    <div class="col-md-4">
+                        {% if sheets_updated %}
+                        <a href="{{ sheet_url }}" target="_blank" class="btn btn-success btn-lg w-100">
+                            <i class="fas fa-table me-2"></i>
+                            View Google Sheets
+                        </a>
+                        {% else %}
+                        <button class="btn btn-secondary btn-lg w-100" disabled>
+                            <i class="fas fa-table me-2"></i>
+                            Google Sheets (Not Available)
+                        </button>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <a href="{{ url_for('calculate_mtu_form') }}" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-calculator me-2"></i>
+                            Calculate Again
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg w-100">
+                            <i class="fas fa-home me-2"></i>
+                            Back to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Insights Card -->
+        <div class="card mt-4">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Key Insights
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Channel Performance:</h6>
+                        <ul class="mb-0">
+                            {% if results.UK.email_mtu > results.UK.push_mtu %}
+                            <li>Email outperforms Push in UK ({{ results.UK.email_mtu }}% vs {{ results.UK.push_mtu }}%)</li>
+                            {% else %}
+                            <li>Push outperforms Email in UK ({{ results.UK.push_mtu }}% vs {{ results.UK.email_mtu }}%)</li>
+                            {% endif %}
+                            
+                            {% if results.UAE.email_mtu > results.UAE.push_mtu %}
+                            <li>Email outperforms Push in UAE ({{ results.UAE.email_mtu }}% vs {{ results.UAE.push_mtu }}%)</li>
+                            {% else %}
+                            <li>Push outperforms Email in UAE ({{ results.UAE.push_mtu }}% vs {{ results.UAE.email_mtu }}%)</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Market Comparison:</h6>
+                        <ul class="mb-0">
+                            <li>UK Active Rate: {{ results.UK.active_percentage }}%</li>
+                            <li>UAE Active Rate: {{ results.UAE.active_percentage }}%</li>
+                            {% if results.UK.active_percentage > results.UAE.active_percentage %}
+                            <li>UK has higher user activity</li>
+                            {% else %}
+                            <li>UAE has higher user activity</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

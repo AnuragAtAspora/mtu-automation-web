@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Segments Created Successfully{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="alert alert-success">
+            <h4><i class="fas fa-check-circle me-2"></i>Segments Created Successfully!</h4>
+            <p class="mb-0">All {{ segments|length }} MTU segments have been created in MoEngage for the period: <strong>{{ period }}</strong></p>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Created Segments
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for segment in segments %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card segment-card h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="fas fa-users me-2 text-primary"></i>
+                                    {{ segment.name }}
+                                </h6>
+                                <p class="card-text text-muted small">{{ segment.description }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">ID: {{ segment.id }}</small>
+                                    <a href="{{ segment.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-external-link-alt me-1"></i>View
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Next Steps
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h6>1. Visit MoEngage Dashboard</h6>
+                        <p class="text-muted">Go to the segments page and find each segment created above. Note down the user count for each segment.</p>
+                        
+                        <h6>2. Collect Segment Counts</h6>
+                        <p class="text-muted">You'll need the user count from each of the {{ segments|length }} segments to calculate MTU percentages.</p>
+                        
+                        <h6>3. Calculate MTU</h6>
+                        <p class="text-muted">Once you have all counts, use our MTU calculator to compute percentages and update Google Sheets.</p>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="d-grid gap-2">
+                            <a href="{{ dashboard_url }}" target="_blank" class="btn btn-primary">
+                                <i class="fas fa-external-link-alt me-2"></i>
+                                Open MoEngage Dashboard
+                            </a>
+                            <a href="{{ url_for('calculate_mtu_form') }}" class="btn btn-success">
+                                <i class="fas fa-calculator me-2"></i>
+                                MTU Calculator
+                            </a>
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-home me-2"></i>
+                                Back to Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Pro Tip
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">
+                    <strong>Bookmark this page!</strong> The segment links above will take you directly to each segment in MoEngage. 
+                    You can also search for segments with the prefix "MTU_" in your MoEngage dashboard.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
