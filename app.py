@@ -359,7 +359,8 @@ def calculate_mtu():
         # Update Google Sheets (if credentials available)
         sheets_updated = False
         try:
-            if os.path.exists('google_credentials.json'):
+            credentials_json = os.environ.get('GOOGLE_CREDENTIALS_JSON')
+            if credentials_json or os.path.exists('google_credentials.json'):
                 update_google_sheets(results, period_info)
                 sheets_updated = True
         except Exception as e:
@@ -430,8 +431,17 @@ def update_google_sheets(results, period_info):
         'https://www.googleapis.com/auth/drive'
     ]
     
-    # Load credentials
-    creds = Credentials.from_service_account_file('google_credentials.json', scopes=scope)
+    # Load credentials from environment variable or file
+    credentials_json = os.environ.get('GOOGLE_CREDENTIALS_JSON')
+    if credentials_json:
+        # Production: Load from environment variable
+        import json
+        from google.oauth2.service_account import Credentials
+        credentials_info = json.loads(credentials_json)
+        creds = Credentials.from_service_account_info(credentials_info, scopes=scope)
+    else:
+        # Development: Load from file
+        creds = Credentials.from_service_account_file('google_credentials.json', scopes=scope)
     
     # Authorize the client
     gc = gspread.authorize(creds)
