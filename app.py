@@ -55,10 +55,6 @@ class MTUWebAutomation:
     def create_segment(self, segment_name, description, filters):
         """Create a segment using MoEngage Custom Segment API"""
         try:
-            # Small delay to ensure unique timestamps
-            import time
-            time.sleep(0.1)
-            
             url = f"https://api-{MOENGAGE_CONFIG['data_center']}.moengage.com/v3/custom-segments/"
             
             # Auth
@@ -81,7 +77,8 @@ class MTUWebAutomation:
                 "included_filters": filters
             }
             
-            response = requests.post(url, json=payload, headers=headers, timeout=30)
+            # Reduced timeout to avoid gateway timeouts
+            response = requests.post(url, json=payload, headers=headers, timeout=15)
             
             if response.status_code in [200, 201]:
                 data = response.json()
@@ -125,6 +122,8 @@ class MTUWebAutomation:
             else:
                 return {'error': f"API Error: {response.status_code} - {response.text}"}
                 
+        except requests.exceptions.Timeout:
+            return {'error': f"Request timeout - MoEngage API took too long to respond"}
         except Exception as e:
             return {'error': f"Error creating segment: {str(e)}"}
     
@@ -143,6 +142,7 @@ class MTUWebAutomation:
         channels = ['push', 'email']
         
         self.created_segments = []
+        failed_segments = []
         
         for country_name, country_code in countries.items():
             
@@ -168,7 +168,8 @@ class MTUWebAutomation:
             
             result = self.create_segment(segment_name, description, filters)
             if 'error' in result:
-                return result
+                failed_segments.append(f"{segment_name}: {result['error']}")
+                # Continue with other segments instead of stopping
             
             # 2. Active users in country (60 days)
             segment_name = f"Automated_{country_code}_Active60d_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
@@ -215,7 +216,8 @@ class MTUWebAutomation:
             
             result = self.create_segment(segment_name, description, filters)
             if 'error' in result:
-                return result
+                failed_segments.append(f"{segment_name}: {result['error']}")
+                # Continue with other segments
             
             # 3. Users who received communications (for each channel)
             for channel in channels:
@@ -261,7 +263,8 @@ class MTUWebAutomation:
                 
                 result = self.create_segment(segment_name, description, filters)
                 if 'error' in result:
-                    return result
+                    failed_segments.append(f"{segment_name}: {result['error']}")
+                    # Continue with other segments
                 
                 # 4. Active users who received communications
                 segment_name = f"Automated_{country_code}_{channel.title()}Active60d_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
@@ -328,14 +331,21 @@ class MTUWebAutomation:
                 
                 result = self.create_segment(segment_name, description, filters)
                 if 'error' in result:
-                    return result
+                    failed_segments.append(f"{segment_name}: {result['error']}")
+                    # Continue with other segments
         
-        return {
+        # Return results even if some segments failed
+        response = {
             'success': True,
             'segments': self.created_segments,
             'period': f"{start_date_str} to {end_date_str}",
             'dashboard_url': 'https://app.moengage.com/v3/#/segments'
         }
+        
+        if failed_segments:
+            response['warnings'] = failed_segments
+        
+        return response
 
 # Initialize automation
 automation = MTUWebAutomation()
@@ -374,10 +384,15 @@ def create_segments():
             flash(f'Error: {result["error"]}', 'error')
             return redirect(url_for('index'))
         
-        return render_template('segments_created.html', 
-                             segments=result['segments'],
-                             period=result['period'],
-                             dashboard_url=result['dashboard_url'])
+        # Check if we have any segments (even if some failed)
+        if result.get('segments'):
+            return render_template('segments_created.html', 
+                                 segments=result['segments'],
+                                 period=result['period'],
+                                 dashboard_url=result['dashboard_url'])
+        else:
+            flash('No segments were created. Please try again.', 'error')
+            return redirect(url_for('index'))
         
     except Exception as e:
         flash(f'Unexpected error: {str(e)}', 'error')
