@@ -87,7 +87,7 @@ class MTUWebAutomation:
                     'name': segment_name,
                     'id': segment_id,
                     'description': unique_description,
-                    'url': f"https://app.moengage.com/v3/#/segments/{segment_id}",
+                    'url': f"https://dashboard-01.moengage.com/v4/segmentation/all-segments/custom-segments/{segment_id}",
                     'status': 'created'
                 }
                 self.created_segments.append(segment_info)
@@ -103,7 +103,7 @@ class MTUWebAutomation:
                         'name': existing_name,
                         'id': existing_id,
                         'description': f"Reusing existing segment: {existing_name}",
-                        'url': f"https://app.moengage.com/v3/#/segments/{existing_id}",
+                        'url': f"https://dashboard-01.moengage.com/v4/segmentation/all-segments/custom-segments/{existing_id}",
                         'status': 'reused'
                     }
                     self.created_segments.append(segment_info)
@@ -114,7 +114,7 @@ class MTUWebAutomation:
                         'name': f"Existing segment (similar to {segment_name})",
                         'id': 'unknown',
                         'description': "Reusing existing segment with same filters",
-                        'url': "https://app.moengage.com/v3/#/segments",
+                        'url': "https://dashboard-01.moengage.com/v4/segmentation/all-segments/custom-segments",
                         'status': 'reused'
                     }
                     self.created_segments.append(segment_info)
@@ -339,7 +339,7 @@ class MTUWebAutomation:
             'success': True,
             'segments': self.created_segments,
             'period': f"{start_date_str} to {end_date_str}",
-            'dashboard_url': 'https://app.moengage.com/v3/#/segments'
+            'dashboard_url': 'https://dashboard-01.moengage.com/v4/segmentation/all-segments/custom-segments'
         }
         
         if failed_segments:
