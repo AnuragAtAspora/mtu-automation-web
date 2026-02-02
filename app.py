@@ -12,6 +12,8 @@ import json
 import os
 import gspread
 from google.oauth2.service_account import Credentials
+import random
+import string
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'mtu-automation-secret-key-2026')
@@ -65,9 +67,13 @@ class MTUWebAutomation:
                 'MOE-APPKEY': MOENGAGE_CONFIG['workspace_id']
             }
             
+            # Add random component to description to avoid duplicate detection
+            random_id = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+            unique_description = f"{description} [ID: {random_id}]"
+            
             payload = {
                 "name": segment_name,
-                "description": description,
+                "description": unique_description,
                 "included_filters": filters
             }
             
@@ -79,25 +85,34 @@ class MTUWebAutomation:
                 segment_info = {
                     'name': segment_name,
                     'id': segment_id,
-                    'description': description,
+                    'description': unique_description,
                     'url': f"https://app.moengage.com/v3/#/segments/{segment_id}"
                 }
                 self.created_segments.append(segment_info)
                 return segment_info
             elif response.status_code == 409:
-                # Conflict - segment already exists, try with different name
+                # Conflict - try with different random ID
                 import time
-                time.sleep(1)  # Wait 1 second
-                segment_name = f"{segment_name.split('_')[0]}_{segment_name.split('_')[1]}_{segment_name.split('_')[2]}_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')[:17]}"
-                payload["name"] = segment_name
+                time.sleep(1)
+                random_id = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+                unique_description = f"{description} [ID: {random_id}]"
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')[:17]
+                unique_name = f"{segment_name}_{timestamp}"
+                
+                payload = {
+                    "name": unique_name,
+                    "description": unique_description,
+                    "included_filters": filters
+                }
+                
                 response = requests.post(url, json=payload, headers=headers, timeout=30)
                 if response.status_code in [200, 201]:
                     data = response.json()
                     segment_id = data['data']['id']
                     segment_info = {
-                        'name': segment_name,
+                        'name': unique_name,
                         'id': segment_id,
-                        'description': description,
+                        'description': unique_description,
                         'url': f"https://app.moengage.com/v3/#/segments/{segment_id}"
                     }
                     self.created_segments.append(segment_info)

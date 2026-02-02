@@ -48,9 +48,15 @@ class MTUSegmentCreator:
                 'MOE-APPKEY': self.workspace_id
             }
             
+            # Add random component to description to avoid duplicate detection
+            import random
+            import string
+            random_id = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+            unique_description = f"{description} [ID: {random_id}]"
+            
             payload = {
                 "name": segment_name,
-                "description": description,
+                "description": unique_description,
                 "included_filters": filters
             }
             
@@ -63,11 +69,41 @@ class MTUSegmentCreator:
                 segment_info = {
                     'name': segment_name,
                     'id': segment_id,
-                    'description': description
+                    'description': unique_description
                 }
                 self.created_segments.append(segment_info)
                 print(f"✅ Created: {segment_id}")
                 return segment_id
+            elif response.status_code == 409:
+                # Conflict - try with different random ID and timestamp
+                import time
+                time.sleep(1)
+                random_id = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+                unique_description = f"{description} [ID: {random_id}]"
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')[:17]
+                unique_name = f"{segment_name}_{timestamp}"
+                
+                payload = {
+                    "name": unique_name,
+                    "description": unique_description,
+                    "included_filters": filters
+                }
+                
+                response = requests.post(url, json=payload, headers=headers, timeout=30)
+                if response.status_code in [200, 201]:
+                    data = response.json()
+                    segment_id = data['data']['id']
+                    segment_info = {
+                        'name': unique_name,
+                        'id': segment_id,
+                        'description': unique_description
+                    }
+                    self.created_segments.append(segment_info)
+                    print(f"✅ Created after retry: {segment_id}")
+                    return segment_id
+                else:
+                    print(f"❌ Error after retry: {response.status_code} - {response.text}")
+                    return None
             else:
                 print(f"❌ Error: {response.status_code} - {response.text}")
                 return None
