@@ -6,15 +6,16 @@
 <div class="row justify-content-center">
     <div class="col-md-10">
         <div class="alert alert-success">
-            <h4><i class="fas fa-check-circle me-2"></i>Segments Created Successfully!</h4>
-            <p class="mb-0">All {{ segments|length }} MTU segments have been created in MoEngage for the period: <strong>{{ period }}</strong></p>
+            <h4><i class="fas fa-check-circle me-2"></i>Segments Ready!</h4>
+            <p class="mb-0">All {{ segments|length }} MTU segments are available in MoEngage for the period: <strong>{{ period }}</strong></p>
+            <small class="text-muted">Some segments may have been reused if they already existed with the same criteria.</small>
         </div>
         
         <div class="card">
             <div class="card-header bg-primary text-white">
                 <h5 class="mb-0">
                     <i class="fas fa-list me-2"></i>
-                    Created Segments
+                    Available Segments
                 </h5>
             </div>
             <div class="card-body">
@@ -24,12 +25,23 @@
                         <div class="card segment-card h-100">
                             <div class="card-body">
                                 <h6 class="card-title">
-                                    <i class="fas fa-users me-2 text-primary"></i>
+                                    {% if segment.status == 'reused' %}
+                                        <i class="fas fa-recycle me-2 text-warning"></i>
+                                    {% else %}
+                                        <i class="fas fa-users me-2 text-primary"></i>
+                                    {% endif %}
                                     {{ segment.name }}
                                 </h6>
                                 <p class="card-text text-muted small">{{ segment.description }}</p>
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <small class="text-muted">ID: {{ segment.id }}</small>
+                                    <div>
+                                        <small class="text-muted">ID: {{ segment.id }}</small>
+                                        {% if segment.status == 'reused' %}
+                                            <br><small class="badge bg-warning text-dark">Reused Existing</small>
+                                        {% else %}
+                                            <br><small class="badge bg-success">Newly Created</small>
+                                        {% endif %}
+                                    </div>
                                     <a href="{{ segment.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
                                         <i class="fas fa-external-link-alt me-1"></i>View
                                     </a>

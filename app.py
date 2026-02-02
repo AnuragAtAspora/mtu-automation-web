@@ -90,39 +90,38 @@ class MTUWebAutomation:
                     'name': segment_name,
                     'id': segment_id,
                     'description': unique_description,
-                    'url': f"https://app.moengage.com/v3/#/segments/{segment_id}"
+                    'url': f"https://app.moengage.com/v3/#/segments/{segment_id}",
+                    'status': 'created'
                 }
                 self.created_segments.append(segment_info)
                 return segment_info
             elif response.status_code == 409:
-                # Conflict - try with completely different approach: add microsecond precision
-                import time
-                time.sleep(2)  # Wait longer
-                microsecond_id = datetime.now().strftime('%Y%m%d_%H%M%S_%f')
-                random_suffix = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
-                unique_name = f"Automated_{segment_name.split('_')[1]}_{segment_name.split('_')[2]}_{microsecond_id}_{random_suffix}"
-                unique_description = f"{description} [Retry: {microsecond_id}]"
-                
-                payload = {
-                    "name": unique_name,
-                    "description": unique_description,
-                    "included_filters": filters
-                }
-                
-                response = requests.post(url, json=payload, headers=headers, timeout=30)
-                if response.status_code in [200, 201]:
-                    data = response.json()
-                    segment_id = data['data']['id']
+                # Segment with same filters already exists - reuse it
+                try:
+                    error_data = response.json()
+                    existing_name = error_data.get('error', {}).get('existing_cs_name', 'Unknown')
+                    existing_id = error_data.get('error', {}).get('existing_cs_id', 'Unknown')
+                    
                     segment_info = {
-                        'name': unique_name,
-                        'id': segment_id,
-                        'description': unique_description,
-                        'url': f"https://app.moengage.com/v3/#/segments/{segment_id}"
+                        'name': existing_name,
+                        'id': existing_id,
+                        'description': f"Reusing existing segment: {existing_name}",
+                        'url': f"https://app.moengage.com/v3/#/segments/{existing_id}",
+                        'status': 'reused'
                     }
                     self.created_segments.append(segment_info)
                     return segment_info
-                else:
-                    return {'error': f"API Error after retry: {response.status_code} - {response.text}"}
+                except:
+                    # Fallback if we can't parse the error
+                    segment_info = {
+                        'name': f"Existing segment (similar to {segment_name})",
+                        'id': 'unknown',
+                        'description': "Reusing existing segment with same filters",
+                        'url': "https://app.moengage.com/v3/#/segments",
+                        'status': 'reused'
+                    }
+                    self.created_segments.append(segment_info)
+                    return segment_info
             else:
                 return {'error': f"API Error: {response.status_code} - {response.text}"}
                 
@@ -151,6 +150,7 @@ class MTUWebAutomation:
             segment_name = f"Automated_{country_code}_AllUsers_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
             description = f"All {country_name} users for MTU calculation"
             
+            # Revert to simple filters - don't try to make them unique
             filters = {
                 "filter_operator": "and",
                 "filters": [
