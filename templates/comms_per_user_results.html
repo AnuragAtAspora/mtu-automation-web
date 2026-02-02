@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Communications Per User Results{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-12">
+        <div class="alert alert-success">
+            <h4><i class="fas fa-check-circle me-2"></i>Communications Per User Analysis Complete!</h4>
+            <p class="mb-0">Successfully analyzed communication patterns for the period: <strong>{{ results.period }}</strong></p>
+            {% if sheets_updated %}
+                <small class="text-success">✅ Google Sheets updated successfully</small>
+            {% endif %}
+        </div>
+        
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-flag me-2"></i>UK Results
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h3 class="text-primary">{{ "%.3f"|format(results.uk.transactional_pn) }}</h3>
+                                <small class="text-muted">Transactional PN per User</small>
+                            </div>
+                            <div class="col-6">
+                                <h3 class="text-info">{{ "%.3f"|format(results.uk.transactional_email) }}</h3>
+                                <small class="text-muted">Transactional Email per User</small>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h3 class="text-success">{{ "%.3f"|format(results.uk.promotional_pn) }}</h3>
+                                <small class="text-muted">Promotional PN per User</small>
+                            </div>
+                            <div class="col-6">
+                                <h3 class="text-warning">{{ "%.3f"|format(results.uk.promotional_email) }}</h3>
+                                <small class="text-muted">Promotional Email per User</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-flag me-2"></i>UAE Results
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h3 class="text-primary">{{ "%.3f"|format(results.uae.transactional_pn) }}</h3>
+                                <small class="text-muted">Transactional PN per User</small>
+                            </div>
+                            <div class="col-6">
+                                <h3 class="text-info">{{ "%.3f"|format(results.uae.transactional_email) }}</h3>
+                                <small class="text-muted">Transactional Email per User</small>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h3 class="text-success">{{ "%.3f"|format(results.uae.promotional_pn) }}</h3>
+                                <small class="text-muted">Promotional PN per User</small>
+                            </div>
+                            <div class="col-6">
+                                <h3 class="text-warning">{{ "%.3f"|format(results.uae.promotional_email) }}</h3>
+                                <small class="text-muted">Promotional Email per User</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Detailed Analysis Table -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-table me-2"></i>
+                    Detailed Analysis
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Metric</th>
+                                <th class="text-center">UK</th>
+                                <th class="text-center">UAE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="table-primary">
+                                <td colspan="3"><strong>TRANSACTIONAL COMMUNICATIONS</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Push Notifications per User</td>
+                                <td class="text-center">{{ "%.4f"|format(results.uk.transactional_pn) }}</td>
+                                <td class="text-center">{{ "%.4f"|format(results.uae.transactional_pn) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Emails per User</td>
+                                <td class="text-center">{{ "%.4f"|format(results.uk.transactional_email) }}</td>
+                                <td class="text-center">{{ "%.4f"|format(results.uae.transactional_email) }}</td>
+                            </tr>
+                            <tr class="table-success">
+                                <td colspan="3"><strong>PROMOTIONAL COMMUNICATIONS</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Push Notifications per User</td>
+                                <td class="text-center">{{ "%.4f"|format(results.uk.promotional_pn) }}</td>
+                                <td class="text-center">{{ "%.4f"|format(results.uae.promotional_pn) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Emails per User</td>
+                                <td class="text-center">{{ "%.4f"|format(results.uk.promotional_email) }}</td>
+                                <td class="text-center">{{ "%.4f"|format(results.uae.promotional_email) }}</td>
+                            </tr>
+                            <tr class="table-warning">
+                                <td colspan="3"><strong>USER BASE</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Total Users</td>
+                                <td class="text-center">{{ "{:,}".format(results.uk.total_users) }}</td>
+                                <td class="text-center">{{ "{:,}".format(results.uae.total_users) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Users Who Transacted</td>
+                                <td class="text-center">{{ "{:,}".format(results.uk.transacted_users) }}</td>
+                                <td class="text-center">{{ "{:,}".format(results.uae.transacted_users) }}</td>
+                            </tr>
+                            <tr class="table-secondary">
+                                <td colspan="3"><strong>RAW COMMUNICATION COUNTS</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Transactional PN Sent</td>
+                                <td class="text-center">{{ "{:,}".format(results.uk.raw_counts.transactional_pn) }}</td>
+                                <td class="text-center">{{ "{:,}".format(results.uae.raw_counts.transactional_pn) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Transactional Emails Sent</td>
+                                <td class="text-center">{{ "{:,}".format(results.uk.raw_counts.transactional_email) }}</td>
+                                <td class="text-center">{{ "{:,}".format(results.uae.raw_counts.transactional_email) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Promotional PN Sent</td>
+                                <td class="text-center">{{ "{:,}".format(results.uk.raw_counts.promotional_pn) }}</td>
+                                <td class="text-center">{{ "{:,}".format(results.uae.raw_counts.promotional_pn) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Promotional Emails Sent</td>
+                                <td class="text-center">{{ "{:,}".format(results.uk.raw_counts.promotional_email) }}</td>
+                                <td class="text-center">{{ "{:,}".format(results.uae.raw_counts.promotional_email) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="row mt-4">
+            <div class="col-md-4">
+                {% if sheets_updated %}
+                    <a href="{{ sheet_url }}" target="_blank" class="btn btn-success w-100">
+                        <i class="fas fa-external-link-alt me-2"></i>
+                        View Google Sheets
+                    </a>
+                {% else %}
+                    <button class="btn btn-secondary w-100" disabled>
+                        <i class="fas fa-times me-2"></i>
+                        Google Sheets (Not Available)
+                    </button>
+                {% endif %}
+            </div>
+            <div class="col-md-4">
+                <a href="{{ url_for('comms_per_user_form') }}" class="btn btn-info w-100">
+                    <i class="fas fa-calculator me-2"></i>
+                    Calculate Again
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-home me-2"></i>
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

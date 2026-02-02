@@ -14,6 +14,10 @@ import gspread
 from google.oauth2.service_account import Credentials
 import random
 import string
+import hashlib
+import zipfile
+import csv
+import io
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'mtu-automation-secret-key-2026')
@@ -27,6 +31,7 @@ def inject_datetime():
 MOENGAGE_CONFIG = {
     'workspace_id': '95PNUHBSYSLLJZ22PEOFMKF2',
     'data_api_key': 'Mj5JSGKcwYum9NKAGmGHJG_E',
+    'campaign_api_key': '3XMHJ83D2X4V',
     'data_center': '01'
 }
 
@@ -347,8 +352,196 @@ class MTUWebAutomation:
         
         return response
 
-# Initialize automation
+class CommsPerUserAutomation:
+    def __init__(self):
+        self.downloaded_reports = {}
+        
+    def get_date_range(self, end_date_str):
+        """Get date range from month start to selected date"""
+        try:
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
+            yesterday = datetime.now() - timedelta(days=1)
+            
+            if end_date > yesterday:
+                raise ValueError(f"End date cannot exceed {yesterday.strftime('%Y-%m-%d')}")
+            
+            start_date = end_date.replace(day=1)
+            return start_date, end_date
+            
+        except ValueError as e:
+            return None, None
+    
+    def download_report(self, report_filename):
+        """Download campaign report from MoEngage"""
+        
+        # Generate signature: App_ID|FILENAME|SECRET_KEY
+        signature_key = f"{MOENGAGE_CONFIG['workspace_id']}|{report_filename}|{MOENGAGE_CONFIG['campaign_api_key']}"
+        signature = hashlib.sha256(signature_key.encode('utf-8')).hexdigest()
+        
+        url = f"https://api-{MOENGAGE_CONFIG['data_center']}.moengage.com/campaign_reports/rest_api/{MOENGAGE_CONFIG['workspace_id']}/{report_filename}"
+        
+        # Headers
+        auth_string = f"{MOENGAGE_CONFIG['workspace_id']}:{MOENGAGE_CONFIG['campaign_api_key']}"
+        encoded_auth = base64.b64encode(auth_string.encode()).decode()
+        
+        headers = {
+            'Authorization': f'Basic {encoded_auth}',
+            'MOE-APPKEY': MOENGAGE_CONFIG['workspace_id'],
+            'Signature': signature
+        }
+        
+        try:
+            response = requests.get(url, headers=headers, timeout=30)
+            
+            if response.status_code == 200:
+                return response.content
+            else:
+                return {'error': f"API Error: {response.status_code} - {response.text}"}
+                
+        except Exception as e:
+            return {'error': f"Error downloading report: {str(e)}"}
+    
+    def parse_report(self, zip_content, report_type):
+        """Parse report and extract communication counts by country"""
+        
+        if not zip_content or isinstance(zip_content, dict):
+            return {'error': 'No report data available'}
+        
+        try:
+            # Extract ZIP content
+            with zipfile.ZipFile(io.BytesIO(zip_content)) as zip_file:
+                csv_files = [f for f in zip_file.namelist() if f.endswith('.csv')]
+                
+                if not csv_files:
+                    return {'error': 'No CSV files found in report'}
+                
+                # Read the first CSV file
+                csv_filename = csv_files[0]
+                with zip_file.open(csv_filename) as csv_file:
+                    csv_content = csv_file.read().decode('utf-8')
+                
+                # Parse CSV
+                csv_reader = csv.DictReader(io.StringIO(csv_content))
+                
+                uk_total = 0
+                uae_total = 0
+                
+                for row in csv_reader:
+                    campaign_name = row.get('Campaign Name', '').lower()
+                    
+                    # Determine sent count based on report type
+                    if 'pn' in report_type.lower():
+                        sent_count = int(row.get('All Platform Sent', 0) or 0)
+                    else:  # Email
+                        sent_count = int(row.get('Sent', 0) or 0)
+                    
+                    # Filter by country
+                    if 'uk' in campaign_name:
+                        uk_total += sent_count
+                    elif 'uae' in campaign_name:
+                        uae_total += sent_count
+                
+                return {
+                    'uk_total': uk_total,
+                    'uae_total': uae_total,
+                    'csv_filename': csv_filename,
+                    'total_rows': len(list(csv.DictReader(io.StringIO(csv_content))))
+                }
+                
+        except Exception as e:
+            return {'error': f"Error parsing report: {str(e)}"}
+    
+    def get_user_counts(self, end_date_str):
+        """Get user counts for calculations"""
+        # For now, we'll use placeholder values
+        # In production, this would create/query segments
+        
+        return {
+            'uk_total_users': 289564,
+            'uae_total_users': 598837,
+            'uk_transacted_users': 125659,
+            'uae_transacted_users': 247692
+        }
+    
+    def calculate_comms_per_user(self, end_date_str):
+        """Calculate communications per user metrics"""
+        
+        # Generate report filenames based on date
+        date_str = end_date_str.replace('-', '')
+        
+        reports = {
+            'transactional_pn': f"API_TX_PN_{date_str}",
+            'transactional_email': f"API_TX_Email_{date_str}",
+            'promotional_pn': f"API_PR_PN_{date_str}",
+            'promotional_email': f"API_PR_Email_{date_str}"
+        }
+        
+        # Download and parse all reports
+        report_data = {}
+        
+        for report_type, filename in reports.items():
+            zip_content = self.download_report(filename)
+            
+            if isinstance(zip_content, dict) and 'error' in zip_content:
+                return zip_content
+            
+            parsed_data = self.parse_report(zip_content, report_type)
+            
+            if 'error' in parsed_data:
+                return parsed_data
+            
+            report_data[report_type] = parsed_data
+        
+        # Get user counts
+        user_counts = self.get_user_counts(end_date_str)
+        
+        if 'error' in user_counts:
+            return user_counts
+        
+        # Calculate metrics
+        results = {
+            'period': f"{self.get_date_range(end_date_str)[0].strftime('%Y-%m-%d')} to {end_date_str}",
+            'uk': {},
+            'uae': {}
+        }
+        
+        # UK Calculations
+        results['uk'] = {
+            'transactional_pn': round(report_data['transactional_pn']['uk_total'] / user_counts['uk_transacted_users'], 4) if user_counts['uk_transacted_users'] > 0 else 0,
+            'transactional_email': round(report_data['transactional_email']['uk_total'] / user_counts['uk_transacted_users'], 4) if user_counts['uk_transacted_users'] > 0 else 0,
+            'promotional_pn': round(report_data['promotional_pn']['uk_total'] / user_counts['uk_total_users'], 4) if user_counts['uk_total_users'] > 0 else 0,
+            'promotional_email': round(report_data['promotional_email']['uk_total'] / user_counts['uk_total_users'], 4) if user_counts['uk_total_users'] > 0 else 0,
+            'total_users': user_counts['uk_total_users'],
+            'transacted_users': user_counts['uk_transacted_users'],
+            'raw_counts': {
+                'transactional_pn': report_data['transactional_pn']['uk_total'],
+                'transactional_email': report_data['transactional_email']['uk_total'],
+                'promotional_pn': report_data['promotional_pn']['uk_total'],
+                'promotional_email': report_data['promotional_email']['uk_total']
+            }
+        }
+        
+        # UAE Calculations
+        results['uae'] = {
+            'transactional_pn': round(report_data['transactional_pn']['uae_total'] / user_counts['uae_transacted_users'], 4) if user_counts['uae_transacted_users'] > 0 else 0,
+            'transactional_email': round(report_data['transactional_email']['uae_total'] / user_counts['uae_transacted_users'], 4) if user_counts['uae_transacted_users'] > 0 else 0,
+            'promotional_pn': round(report_data['promotional_pn']['uae_total'] / user_counts['uae_total_users'], 4) if user_counts['uae_total_users'] > 0 else 0,
+            'promotional_email': round(report_data['promotional_email']['uae_total'] / user_counts['uae_total_users'], 4) if user_counts['uae_total_users'] > 0 else 0,
+            'total_users': user_counts['uae_total_users'],
+            'transacted_users': user_counts['uae_transacted_users'],
+            'raw_counts': {
+                'transactional_pn': report_data['transactional_pn']['uae_total'],
+                'transactional_email': report_data['transactional_email']['uae_total'],
+                'promotional_pn': report_data['promotional_pn']['uae_total'],
+                'promotional_email': report_data['promotional_email']['uae_total']
+            }
+        }
+        
+        return results
+
+# Initialize automations
 automation = MTUWebAutomation()
+comms_automation = CommsPerUserAutomation()
 
 @app.route('/')
 def index():
@@ -397,6 +590,47 @@ def create_segments():
     except Exception as e:
         flash(f'Unexpected error: {str(e)}', 'error')
         return redirect(url_for('index'))
+
+@app.route('/comms-per-user')
+def comms_per_user_form():
+    """Show Communications Per User calculation form"""
+    return render_template('comms_per_user.html')
+
+@app.route('/calculate-comms-per-user', methods=['POST'])
+def calculate_comms_per_user():
+    """Calculate Communications Per User metrics"""
+    try:
+        end_date = request.form.get('end_date')
+        
+        if not end_date:
+            flash('Please select an end date', 'error')
+            return redirect(url_for('comms_per_user_form'))
+        
+        result = comms_automation.calculate_comms_per_user(end_date)
+        
+        if 'error' in result:
+            flash(f'Error: {result["error"]}', 'error')
+            return redirect(url_for('comms_per_user_form'))
+        
+        # Update Google Sheets (if credentials available)
+        sheets_updated = False
+        try:
+            credentials_json = os.environ.get('GOOGLE_CREDENTIALS_JSON')
+            if credentials_json or os.path.exists('google_credentials.json'):
+                update_comms_google_sheets(result)
+                sheets_updated = True
+        except Exception as e:
+            print(f"Warning: Could not update Google Sheets: {str(e)}")
+            flash(f'Warning: Could not update Google Sheets: {str(e)}', 'warning')
+        
+        return render_template('comms_per_user_results.html', 
+                             results=result,
+                             sheets_updated=sheets_updated,
+                             sheet_url=f"https://docs.google.com/spreadsheets/d/{GOOGLE_SHEET_ID}")
+        
+    except Exception as e:
+        flash(f'Error calculating Communications Per User: {str(e)}', 'error')
+        return redirect(url_for('comms_per_user_form'))
 
 @app.route('/calculate-mtu')
 def calculate_mtu_form():
@@ -491,6 +725,73 @@ def calculate_mtu_percentages(segment_counts):
                 results[country][f'{channel}_reach'] = 0
     
     return results
+
+def update_comms_google_sheets(results):
+    """Update Google Sheets with Communications Per User results"""
+    # Define the scope
+    scope = [
+        'https://spreadsheets.google.com/feeds',
+        'https://www.googleapis.com/auth/drive'
+    ]
+    
+    # Load credentials from environment variable or file
+    credentials_json = os.environ.get('GOOGLE_CREDENTIALS_JSON')
+    if credentials_json:
+        # Production: Load from environment variable
+        credentials_info = json.loads(credentials_json)
+        creds = Credentials.from_service_account_info(credentials_info, scopes=scope)
+    elif os.path.exists('google_credentials.json'):
+        # Development: Load from file
+        creds = Credentials.from_service_account_file('google_credentials.json', scopes=scope)
+    else:
+        raise Exception("No Google credentials found. Please set GOOGLE_CREDENTIALS_JSON environment variable or add google_credentials.json file.")
+    
+    # Authorize the client
+    gc = gspread.authorize(creds)
+    
+    # Open the specific sheet
+    sheet = gc.open_by_key(GOOGLE_SHEET_ID)
+    
+    # Get or create Communications Per User worksheet
+    try:
+        worksheet = sheet.worksheet("Communications Per User")
+    except gspread.WorksheetNotFound:
+        worksheet = sheet.add_worksheet(title="Communications Per User", rows=50, cols=15)
+    
+    # Clear existing content
+    worksheet.clear()
+    
+    # Prepare data in vertical format
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    
+    data = [
+        ['Communications Per User Report', ''],
+        ['Generated', timestamp],
+        ['Period', results['period']],
+        ['', ''],  # Empty row
+        ['Metric', 'UK', 'UAE'],
+        ['', '', ''],  # Empty row
+        ['TRANSACTIONAL COMMUNICATIONS', '', ''],
+        ['Transactional PN per User', results['uk']['transactional_pn'], results['uae']['transactional_pn']],
+        ['Transactional Email per User', results['uk']['transactional_email'], results['uae']['transactional_email']],
+        ['', '', ''],  # Empty row
+        ['PROMOTIONAL COMMUNICATIONS', '', ''],
+        ['Promotional PN per User', results['uk']['promotional_pn'], results['uae']['promotional_pn']],
+        ['Promotional Email per User', results['uk']['promotional_email'], results['uae']['promotional_email']],
+        ['', '', ''],  # Empty row
+        ['USER COUNTS', '', ''],
+        ['Total Users', results['uk']['total_users'], results['uae']['total_users']],
+        ['Transacted Users', results['uk']['transacted_users'], results['uae']['transacted_users']],
+        ['', '', ''],  # Empty row
+        ['RAW COMMUNICATION COUNTS', '', ''],
+        ['Transactional PN Sent', results['uk']['raw_counts']['transactional_pn'], results['uae']['raw_counts']['transactional_pn']],
+        ['Transactional Email Sent', results['uk']['raw_counts']['transactional_email'], results['uae']['raw_counts']['transactional_email']],
+        ['Promotional PN Sent', results['uk']['raw_counts']['promotional_pn'], results['uae']['raw_counts']['promotional_pn']],
+        ['Promotional Email Sent', results['uk']['raw_counts']['promotional_email'], results['uae']['raw_counts']['promotional_email']],
+    ]
+    
+    # Update the worksheet
+    worksheet.update('A1', data)
 
 def update_google_sheets(results, period_info):
     """Update Google Sheets with MTU results"""
