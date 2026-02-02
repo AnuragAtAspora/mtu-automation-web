@@ -46,13 +46,13 @@
                                 <div class="card-body">
                                     <div class="mb-3">
                                         <label class="form-label">All UK Users</label>
-                                        <input type="number" class="form-control" name="uk_all_users" min="0" required>
+                                        <input type="number" class="form-control" name="uk_all_users" min="0" max="99999999" required>
                                         <small class="text-muted">Total users in UK</small>
                                     </div>
                                     
                                     <div class="mb-3">
                                         <label class="form-label">Active UK Users (60 days)</label>
-                                        <input type="number" class="form-control" name="uk_active_users" min="0" required>
+                                        <input type="number" class="form-control" name="uk_active_users" min="0" max="99999999" required>
                                         <small class="text-muted">UK users who made transactions in last 60 days</small>
                                     </div>
                                     
@@ -60,13 +60,13 @@
                                     
                                     <div class="mb-3">
                                         <label class="form-label">UK Push Recipients</label>
-                                        <input type="number" class="form-control" name="uk_push_received" min="0" required>
+                                        <input type="number" class="form-control" name="uk_push_received" min="0" max="99999999" required>
                                         <small class="text-muted">UK users who received push notifications</small>
                                     </div>
                                     
                                     <div class="mb-3">
                                         <label class="form-label">UK Push Recipients (Active)</label>
-                                        <input type="number" class="form-control" name="uk_push_received_active" min="0" required>
+                                        <input type="number" class="form-control" name="uk_push_received_active" min="0" max="99999999" required>
                                         <small class="text-muted">Active UK users who received push notifications</small>
                                     </div>
                                     
@@ -74,13 +74,13 @@
                                     
                                     <div class="mb-3">
                                         <label class="form-label">UK Email Recipients</label>
-                                        <input type="number" class="form-control" name="uk_email_received" min="0" required>
+                                        <input type="number" class="form-control" name="uk_email_received" min="0" max="99999999" required>
                                         <small class="text-muted">UK users who received emails</small>
                                     </div>
                                     
                                     <div class="mb-3">
                                         <label class="form-label">UK Email Recipients (Active)</label>
-                                        <input type="number" class="form-control" name="uk_email_received_active" min="0" required>
+                                        <input type="number" class="form-control" name="uk_email_received_active" min="0" max="99999999" required>
                                         <small class="text-muted">Active UK users who received emails</small>
                                     </div>
                                 </div>
@@ -98,13 +98,13 @@
                                 <div class="card-body">
                                     <div class="mb-3">
                                         <label class="form-label">All UAE Users</label>
-                                        <input type="number" class="form-control" name="uae_all_users" min="0" required>
+                                        <input type="number" class="form-control" name="uae_all_users" min="0" max="99999999" required>
                                         <small class="text-muted">Total users in UAE</small>
                                     </div>
                                     
                                     <div class="mb-3">
                                         <label class="form-label">Active UAE Users (60 days)</label>
-                                        <input type="number" class="form-control" name="uae_active_users" min="0" required>
+                                        <input type="number" class="form-control" name="uae_active_users" min="0" max="99999999" required>
                                         <small class="text-muted">UAE users who made transactions in last 60 days</small>
                                     </div>
                                     
@@ -112,13 +112,13 @@
                                     
                                     <div class="mb-3">
                                         <label class="form-label">UAE Push Recipients</label>
-                                        <input type="number" class="form-control" name="uae_push_received" min="0" required>
+                                        <input type="number" class="form-control" name="uae_push_received" min="0" max="99999999" required>
                                         <small class="text-muted">UAE users who received push notifications</small>
                                     </div>
                                     
                                     <div class="mb-3">
                                         <label class="form-label">UAE Push Recipients (Active)</label>
-                                        <input type="number" class="form-control" name="uae_push_received_active" min="0" required>
+                                        <input type="number" class="form-control" name="uae_push_received_active" min="0" max="99999999" required>
                                         <small class="text-muted">Active UAE users who received push notifications</small>
                                     </div>
                                     
@@ -126,13 +126,13 @@
                                     
                                     <div class="mb-3">
                                         <label class="form-label">UAE Email Recipients</label>
-                                        <input type="number" class="form-control" name="uae_email_received" min="0" required>
+                                        <input type="number" class="form-control" name="uae_email_received" min="0" max="99999999" required>
                                         <small class="text-muted">UAE users who received emails</small>
                                     </div>
                                     
                                     <div class="mb-3">
                                         <label class="form-label">UAE Email Recipients (Active)</label>
-                                        <input type="number" class="form-control" name="uae_email_received_active" min="0" required>
+                                        <input type="number" class="form-control" name="uae_email_received_active" min="0" max="99999999" required>
                                         <small class="text-muted">Active UAE users who received emails</small>
                                     </div>
                                 </div>
@@ -188,24 +188,47 @@
 </div>
 
 <script>
-// Add thousand separators to number inputs
+// Handle large numbers in input fields
 document.addEventListener('DOMContentLoaded', function() {
     const numberInputs = document.querySelectorAll('input[type="number"]');
     
     numberInputs.forEach(input => {
+        // Allow typing large numbers
         input.addEventListener('input', function() {
-            // Remove any existing formatting
-            let value = this.value.replace(/,/g, '');
-            
-            // Add thousand separators
-            if (value && !isNaN(value)) {
-                this.value = parseInt(value).toLocaleString();
+            // Ensure the value doesn't exceed our max
+            if (this.value && parseInt(this.value) > 99999999) {
+                this.value = 99999999;
             }
         });
         
-        // Remove formatting before form submission
+        // Add visual formatting on blur (when user leaves the field)
+        input.addEventListener('blur', function() {
+            if (this.value && !isNaN(this.value)) {
+                // Store the raw value
+                this.dataset.rawValue = this.value;
+                // Display formatted value
+                this.value = parseInt(this.value).toLocaleString();
+            }
+        });
+        
+        // Remove formatting on focus (when user clicks on field)
         input.addEventListener('focus', function() {
-            this.value = this.value.replace(/,/g, '');
+            if (this.dataset.rawValue) {
+                this.value = this.dataset.rawValue;
+            } else {
+                this.value = this.value.replace(/,/g, '');
+            }
+        });
+        
+        // Ensure raw values are submitted
+        input.closest('form').addEventListener('submit', function() {
+            numberInputs.forEach(inp => {
+                if (inp.dataset.rawValue) {
+                    inp.value = inp.dataset.rawValue;
+                } else {
+                    inp.value = inp.value.replace(/,/g, '');
+                }
+            });
         });
     });
 });
