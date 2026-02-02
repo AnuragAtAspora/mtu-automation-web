@@ -78,7 +78,7 @@ class MTUSegmentCreator:
     
     def create_country_segment(self, country_code, country_name):
         """Create segment for all users in a country"""
-        segment_name = f"MTU_{country_code}_AllUsers_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        segment_name = f"Automated_{country_code}_AllUsers_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         description = f"All {country_name} users for MTU calculation"
         
         filters = {
@@ -100,7 +100,7 @@ class MTUSegmentCreator:
     
     def create_active_users_segment(self, country_code, country_name, days=60):
         """Create segment for users who transacted in last N days"""
-        segment_name = f"MTU_{country_code}_Active{days}d_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        segment_name = f"Automated_{country_code}_Active{days}d_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         description = f"{country_name} users who transacted in last {days} days"
         
         # Calculate date range
@@ -146,7 +146,7 @@ class MTUSegmentCreator:
     
     def create_comms_received_segment(self, country_code, country_name, channel, start_date, end_date):
         """Create segment for users who received communications in period"""
-        segment_name = f"MTU_{country_code}_{channel.title()}Received_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        segment_name = f"Automated_{country_code}_{channel.title()}Received_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         description = f"{country_name} users who received {channel} from {start_date} to {end_date}"
         
         # Determine event name based on channel
@@ -191,7 +191,7 @@ class MTUSegmentCreator:
     
     def create_active_comms_received_segment(self, country_code, country_name, channel, start_date, end_date, active_days=60):
         """Create segment for active users who received communications"""
-        segment_name = f"MTU_{country_code}_{channel.title()}Active{active_days}d_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        segment_name = f"Automated_{country_code}_{channel.title()}Active{active_days}d_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         description = f"{country_name} active users ({active_days}d) who received {channel} from {start_date} to {end_date}"
         
         # Determine event name based on channel
@@ -335,7 +335,7 @@ def main():
     
     print("\n⚠️  IMPORTANT NOTES:")
     print("   - This will create segments in your MoEngage account")
-    print("   - Segments will be named with MTU_ prefix and timestamp")
+    print("   - Segments will be named with Automated_ prefix and timestamp")
     print("   - You'll need to check segment counts in MoEngage dashboard")
     print("   - Adjust 'transaction' event name if different in your setup")
     

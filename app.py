@@ -109,7 +109,7 @@ class MTUWebAutomation:
         for country_name, country_code in countries.items():
             
             # 1. All users in country
-            segment_name = f"MTU_{country_code}_AllUsers_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            segment_name = f"Automated_{country_code}_AllUsers_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             description = f"All {country_name} users for MTU calculation"
             
             filters = {
@@ -132,7 +132,7 @@ class MTUWebAutomation:
                 return result
             
             # 2. Active users in country (60 days)
-            segment_name = f"MTU_{country_code}_Active60d_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            segment_name = f"Automated_{country_code}_Active60d_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             description = f"{country_name} users who transacted in last 60 days"
             
             # Calculate date range
@@ -182,7 +182,7 @@ class MTUWebAutomation:
             for channel in channels:
                 event_name = "MOE_EMAIL_SENT" if channel == "email" else "MOE_PUSH_SENT"
                 
-                segment_name = f"MTU_{country_code}_{channel.title()}Received_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                segment_name = f"Automated_{country_code}_{channel.title()}Received_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
                 description = f"{country_name} users who received {channel} from {start_date_str} to {end_date_str}"
                 
                 filters = {
@@ -225,7 +225,7 @@ class MTUWebAutomation:
                     return result
                 
                 # 4. Active users who received communications
-                segment_name = f"MTU_{country_code}_{channel.title()}Active60d_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                segment_name = f"Automated_{country_code}_{channel.title()}Active60d_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
                 description = f"{country_name} active users (60d) who received {channel} from {start_date_str} to {end_date_str}"
                 
                 # Calculate active period
@@ -304,7 +304,20 @@ automation = MTUWebAutomation()
 @app.route('/')
 def index():
     """Home page with date input"""
-    return render_template('index.html')
+    try:
+        return render_template('index.html')
+    except Exception as e:
+        return f"Error loading home page: {str(e)}", 500
+
+@app.route('/health')
+def health_check():
+    """Health check endpoint"""
+    return {"status": "ok", "message": "MTU Automation is running"}, 200
+
+@app.route('/test')
+def test_route():
+    """Simple test route"""
+    return "<h1>MTU Automation Test</h1><p>If you see this, the Flask app is working!</p>"
 
 @app.route('/create-segments', methods=['POST'])
 def create_segments():
