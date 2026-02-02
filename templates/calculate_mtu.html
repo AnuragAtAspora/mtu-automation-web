@@ -188,46 +188,27 @@
 </div>
 
 <script>
-// Handle large numbers in input fields
+// Handle large numbers in input fields - simplified version
 document.addEventListener('DOMContentLoaded', function() {
     const numberInputs = document.querySelectorAll('input[type="number"]');
     
     numberInputs.forEach(input => {
-        // Allow typing large numbers
+        // Just ensure the value doesn't exceed our max - no formatting
         input.addEventListener('input', function() {
-            // Ensure the value doesn't exceed our max
             if (this.value && parseInt(this.value) > 99999999) {
                 this.value = 99999999;
             }
         });
         
-        // Add visual formatting on blur (when user leaves the field)
-        input.addEventListener('blur', function() {
-            if (this.value && !isNaN(this.value)) {
-                // Store the raw value
-                this.dataset.rawValue = this.value;
-                // Display formatted value
-                this.value = parseInt(this.value).toLocaleString();
-            }
-        });
-        
-        // Remove formatting on focus (when user clicks on field)
+        // Remove any commas if they somehow get in there
         input.addEventListener('focus', function() {
-            if (this.dataset.rawValue) {
-                this.value = this.dataset.rawValue;
-            } else {
-                this.value = this.value.replace(/,/g, '');
-            }
+            this.value = this.value.replace(/,/g, '');
         });
         
-        // Ensure raw values are submitted
+        // Clean up before form submission
         input.closest('form').addEventListener('submit', function() {
             numberInputs.forEach(inp => {
-                if (inp.dataset.rawValue) {
-                    inp.value = inp.dataset.rawValue;
-                } else {
-                    inp.value = inp.value.replace(/,/g, '');
-                }
+                inp.value = inp.value.replace(/,/g, '');
             });
         });
     });
