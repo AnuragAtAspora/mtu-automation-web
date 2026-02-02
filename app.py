@@ -84,6 +84,26 @@ class MTUWebAutomation:
                 }
                 self.created_segments.append(segment_info)
                 return segment_info
+            elif response.status_code == 409:
+                # Conflict - segment already exists, try with different name
+                import time
+                time.sleep(1)  # Wait 1 second
+                segment_name = f"{segment_name.split('_')[0]}_{segment_name.split('_')[1]}_{segment_name.split('_')[2]}_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')[:17]}"
+                payload["name"] = segment_name
+                response = requests.post(url, json=payload, headers=headers, timeout=30)
+                if response.status_code in [200, 201]:
+                    data = response.json()
+                    segment_id = data['data']['id']
+                    segment_info = {
+                        'name': segment_name,
+                        'id': segment_id,
+                        'description': description,
+                        'url': f"https://app.moengage.com/v3/#/segments/{segment_id}"
+                    }
+                    self.created_segments.append(segment_info)
+                    return segment_info
+                else:
+                    return {'error': f"API Error after retry: {response.status_code} - {response.text}"}
             else:
                 return {'error': f"API Error: {response.status_code} - {response.text}"}
                 
@@ -109,7 +129,7 @@ class MTUWebAutomation:
         for country_name, country_code in countries.items():
             
             # 1. All users in country
-            segment_name = f"Automated_{country_code}_AllUsers_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            segment_name = f"Automated_{country_code}_AllUsers_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')[:17]}"
             description = f"All {country_name} users for MTU calculation"
             
             filters = {
@@ -132,7 +152,7 @@ class MTUWebAutomation:
                 return result
             
             # 2. Active users in country (60 days)
-            segment_name = f"Automated_{country_code}_Active60d_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            segment_name = f"Automated_{country_code}_Active60d_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')[:17]}"
             description = f"{country_name} users who transacted in last 60 days"
             
             # Calculate date range
@@ -182,7 +202,7 @@ class MTUWebAutomation:
             for channel in channels:
                 event_name = "MOE_EMAIL_SENT" if channel == "email" else "MOE_PUSH_SENT"
                 
-                segment_name = f"Automated_{country_code}_{channel.title()}Received_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                segment_name = f"Automated_{country_code}_{channel.title()}Received_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')[:17]}"
                 description = f"{country_name} users who received {channel} from {start_date_str} to {end_date_str}"
                 
                 filters = {
@@ -225,7 +245,7 @@ class MTUWebAutomation:
                     return result
                 
                 # 4. Active users who received communications
-                segment_name = f"Automated_{country_code}_{channel.title()}Active60d_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                segment_name = f"Automated_{country_code}_{channel.title()}Active60d_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')[:17]}"
                 description = f"{country_name} active users (60d) who received {channel} from {start_date_str} to {end_date_str}"
                 
                 # Calculate active period
