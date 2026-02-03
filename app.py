@@ -371,8 +371,8 @@ class CommsPerUserAutomation:
         except ValueError as e:
             return None, None
     
-    def download_report(self, report_filename):
-        """Download campaign report from MoEngage"""
+    def download_report(self, report_filename, start_date=None, end_date=None):
+        """Download campaign report from MoEngage with date parameters"""
         
         # Generate signature: App_ID|FILENAME|SECRET_KEY
         signature_key = f"{MOENGAGE_CONFIG['workspace_id']}|{report_filename}|{MOENGAGE_CONFIG['campaign_api_key']}"
@@ -390,15 +390,28 @@ class CommsPerUserAutomation:
             'Signature': signature
         }
         
+        # Add date parameters if provided
+        params = {}
+        if start_date and end_date:
+            params['start_date'] = start_date
+            params['end_date'] = end_date
+        
         try:
-            response = requests.get(url, headers=headers, timeout=30)
+            print(f"📥 Downloading report: {report_filename}")
+            if params:
+                print(f"📅 Date range: {start_date} to {end_date}")
+            
+            response = requests.get(url, headers=headers, params=params, timeout=30)
             
             if response.status_code == 200:
+                print(f"✅ Report downloaded successfully")
                 return response.content
             else:
+                print(f"❌ API Error: {response.status_code} - {response.text}")
                 return {'error': f"API Error: {response.status_code} - {response.text}"}
                 
         except Exception as e:
+            print(f"❌ Download error: {str(e)}")
             return {'error': f"Error downloading report: {str(e)}"}
     
     def parse_report(self, zip_content, report_type):
@@ -466,21 +479,28 @@ class CommsPerUserAutomation:
     def calculate_comms_per_user(self, end_date_str):
         """Calculate communications per user metrics"""
         
-        # Generate report filenames based on date
-        date_str = end_date_str.replace('-', '')
+        # Get date range for API parameters
+        start_date, end_date = self.get_date_range(end_date_str)
+        if not start_date:
+            return {'error': 'Invalid date range'}
         
+        # Format dates for API (YYYY-MM-DD format)
+        start_date_api = start_date.strftime('%Y-%m-%d')
+        end_date_api = end_date.strftime('%Y-%m-%d')
+        
+        # Static report filenames (as configured in MoEngage)
         reports = {
-            'transactional_pn': f"API_TX_PN_{date_str}",
-            'transactional_email': f"API_TX_Email_{date_str}",
-            'promotional_pn': f"API_PR_PN_{date_str}",
-            'promotional_email': f"API_PR_Email_{date_str}"
+            'transactional_pn': "API_TX_PN_20260202",
+            'transactional_email': "API_TX_Email_20260202", 
+            'promotional_pn': "API_PR_PN_20260202",
+            'promotional_email': "API_PR_Email_20260202"
         }
         
-        # Download and parse all reports
+        # Download and parse all reports with date parameters
         report_data = {}
         
         for report_type, filename in reports.items():
-            zip_content = self.download_report(filename)
+            zip_content = self.download_report(filename, start_date_api, end_date_api)
             
             if isinstance(zip_content, dict) and 'error' in zip_content:
                 return zip_content
@@ -500,7 +520,7 @@ class CommsPerUserAutomation:
         
         # Calculate metrics
         results = {
-            'period': f"{self.get_date_range(end_date_str)[0].strftime('%Y-%m-%d')} to {end_date_str}",
+            'period': f"{start_date_api} to {end_date_api}",
             'uk': {},
             'uae': {}
         }
