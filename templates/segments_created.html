@@ -3,109 +3,92 @@
 {% block title %}Segments Created Successfully{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="alert alert-success">
-            <h4><i class="fas fa-check-circle me-2"></i>Segments Ready!</h4>
-            <p class="mb-0">All {{ segments|length }} MTU segments are available in MoEngage for the period: <strong>{{ period }}</strong></p>
-            <small class="text-muted">Some segments may have been reused if they already existed with the same criteria.</small>
+<div style="max-width: 1000px; margin: 0 auto;">
+    <div class="alert alert-success">
+        <h4 style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">Segments Ready!</h4>
+        <p style="margin-bottom: 8px;">All {{ segments|length }} MTU segments are available in MoEngage for the period: <strong>{{ period }}</strong></p>
+        <small style="color: var(--text-secondary);">Some segments may have been reused if they already existed with the same criteria.</small>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Available Segments</h3>
         </div>
-        
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">
-                    <i class="fas fa-list me-2"></i>
-                    Available Segments
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    {% for segment in segments %}
-                    <div class="col-md-6 mb-3">
-                        <div class="card segment-card h-100">
-                            <div class="card-body">
-                                <h6 class="card-title">
-                                    {% if segment.status == 'reused' %}
-                                        <i class="fas fa-recycle me-2 text-warning"></i>
-                                    {% else %}
-                                        <i class="fas fa-users me-2 text-primary"></i>
-                                    {% endif %}
-                                    {{ segment.name }}
-                                </h6>
-                                <p class="card-text text-muted small">{{ segment.description }}</p>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <small class="text-muted">ID: {{ segment.id }}</small>
-                                        {% if segment.status == 'reused' %}
-                                            <br><small class="badge bg-warning text-dark">Reused Existing</small>
-                                        {% else %}
-                                            <br><small class="badge bg-success">Newly Created</small>
-                                        {% endif %}
-                                    </div>
-                                    <a href="{{ segment.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-external-link-alt me-1"></i>View
-                                    </a>
-                                </div>
+        <div class="card-body">
+            <div class="grid grid-2">
+                {% for segment in segments %}
+                <div class="card" style="height: 100%;">
+                    <div class="card-body">
+                        <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">
+                            {% if segment.status == 'reused' %}
+                                ♻️ {{ segment.name }}
+                            {% else %}
+                                👥 {{ segment.name }}
+                            {% endif %}
+                        </h4>
+                        <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;">{{ segment.description }}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <small style="color: var(--text-light);">ID: {{ segment.id }}</small>
+                                {% if segment.status == 'reused' %}
+                                    <br><small style="background: var(--warning-color); color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">Reused Existing</small>
+                                {% else %}
+                                    <br><small style="background: var(--success-color); color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">Newly Created</small>
+                                {% endif %}
                             </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-        
-        <div class="card mt-4">
-            <div class="card-header bg-warning text-dark">
-                <h5 class="mb-0">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    Next Steps
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-8">
-                        <h6>1. Visit MoEngage Dashboard</h6>
-                        <p class="text-muted">Go to the segments page and find each segment created above. Note down the user count for each segment.</p>
-                        
-                        <h6>2. Collect Segment Counts</h6>
-                        <p class="text-muted">You'll need the user count from each of the {{ segments|length }} segments to calculate MTU percentages.</p>
-                        
-                        <h6>3. Calculate MTU</h6>
-                        <p class="text-muted">Once you have all counts, use our MTU calculator to compute percentages and update Google Sheets.</p>
-                    </div>
-                    <div class="col-md-4 text-center">
-                        <div class="d-grid gap-2">
-                            <a href="{{ dashboard_url }}" target="_blank" class="btn btn-primary">
-                                <i class="fas fa-external-link-alt me-2"></i>
-                                Open MoEngage Dashboard
-                            </a>
-                            <a href="{{ url_for('calculate_mtu_form') }}" class="btn btn-success">
-                                <i class="fas fa-calculator me-2"></i>
-                                MTU Calculator
-                            </a>
-                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-home me-2"></i>
-                                Back to Home
+                            <a href="{{ segment.url }}" target="_blank" class="btn btn-secondary" style="font-size: 14px; padding: 8px 16px;">
+                                View
                             </a>
                         </div>
                     </div>
                 </div>
+                {% endfor %}
             </div>
         </div>
-        
-        <div class="card mt-4">
-            <div class="card-header bg-info text-white">
-                <h6 class="mb-0">
-                    <i class="fas fa-lightbulb me-2"></i>
-                    Pro Tip
-                </h6>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-header" style="background: var(--warning-color); color: white;">
+            <h3 class="card-title" style="color: white;">Next Steps</h3>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-2">
+                <div>
+                    <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">1. Visit MoEngage Dashboard</h4>
+                    <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 24px;">Go to the segments page and find each segment created above. Note down the user count for each segment.</p>
+                    
+                    <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">2. Collect Segment Counts</h4>
+                    <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 24px;">You'll need the user count from each of the {{ segments|length }} segments to calculate MTU percentages.</p>
+                    
+                    <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">3. Calculate MTU</h4>
+                    <p style="color: var(--text-secondary); font-size: 14px;">Once you have all counts, use our MTU calculator to compute percentages and update Google Sheets.</p>
+                </div>
+                <div class="text-center">
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        <a href="{{ dashboard_url }}" target="_blank" class="btn btn-primary btn-large">
+                            Open MoEngage Dashboard
+                        </a>
+                        <a href="{{ url_for('calculate_mtu_form') }}" class="btn btn-primary btn-large">
+                            MTU Calculator
+                        </a>
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary btn-large">
+                            Back to Home
+                        </a>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <p class="mb-0">
-                    <strong>Bookmark this page!</strong> The segment links above will take you directly to each segment in MoEngage. 
-                    You can also search for segments with the prefix "MTU_" in your MoEngage dashboard.
-                </p>
-            </div>
+        </div>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-header" style="background: var(--primary-color); color: white;">
+            <h3 class="card-title" style="color: white;">Pro Tip</h3>
+        </div>
+        <div class="card-body">
+            <p style="margin: 0; color: var(--text-secondary);">
+                <strong>Bookmark this page!</strong> The segment links above will take you directly to each segment in MoEngage. 
+                You can also search for segments with the prefix "Automated_" in your MoEngage dashboard.
+            </p>
         </div>
     </div>
 </div>

@@ -3,109 +3,99 @@
 {% block title %}Communications Per User Calculator{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header bg-info text-white">
-                <h4 class="mb-0">
-                    <i class="fas fa-chart-bar me-2"></i>
-                    Communications Per User Calculator
-                </h4>
-            </div>
-            <div class="card-body">
-                <p class="text-muted mb-4">
-                    Calculate the average number of communications (transactional and promotional) 
-                    received per user for UK and UAE markets. This metric helps understand communication 
-                    frequency and user engagement patterns.
-                </p>
+<div style="max-width: 800px; margin: 0 auto;">
+    <div class="text-center mb-5">
+        <h1 style="font-size: 36px; font-weight: 700; margin-bottom: 16px;">Communications Per User</h1>
+        <p style="font-size: 18px; color: var(--text-secondary);">Calculate the average number of communications received per user across different channels and regions.</p>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('calculate_comms_per_user') }}">
+                <div class="form-group">
+                    <label for="end_date" class="form-label">End Date for Analysis Period</label>
+                    <input type="date" 
+                           class="form-control" 
+                           id="end_date" 
+                           name="end_date" 
+                           required
+                           max="{{ (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d') }}">
+                    <div class="form-text">
+                        Select the last day of your analysis period. The system will analyze from the 1st of that month to your selected date.
+                    </div>
+                </div>
                 
-                <form method="POST" action="{{ url_for('calculate_comms_per_user') }}">
-                    <div class="mb-4">
-                        <label for="end_date" class="form-label">
-                            <i class="fas fa-calendar me-2"></i>End Date for Analysis Period
-                        </label>
-                        <input type="date" 
-                               class="form-control" 
-                               id="end_date" 
-                               name="end_date" 
-                               required
-                               max="{{ (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d') }}">
-                        <div class="form-text">
-                            Select the last day of your analysis period. The system will analyze from the 1st of that month to your selected date.
+                <div class="alert alert-info">
+                    <h4 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">What This Calculator Does</h4>
+                    <div class="grid grid-2">
+                        <div>
+                            <h5 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Downloads 4 Reports:</h5>
+                            <ul style="margin: 0; padding-left: 20px; color: var(--text-secondary);">
+                                <li>Transactional Push Notifications</li>
+                                <li>Transactional Emails</li>
+                                <li>Promotional Push Notifications</li>
+                                <li>Promotional Emails</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Calculates Metrics:</h5>
+                            <ul style="margin: 0; padding-left: 20px; color: var(--text-secondary);">
+                                <li><strong>Promotional:</strong> Total sent ÷ Total users</li>
+                                <li><strong>Transactional:</strong> Total sent ÷ Users who transacted</li>
+                                <li>Separate results for UK and UAE</li>
+                                <li>Automatic Google Sheets update</li>
+                            </ul>
                         </div>
                     </div>
-                    
-                    <div class="alert alert-info">
-                        <h6><i class="fas fa-info-circle me-2"></i>What This Calculator Does:</h6>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p class="mb-2"><strong>Downloads 4 Reports:</strong></p>
-                                <ul class="small mb-0">
-                                    <li>Transactional Push Notifications</li>
-                                    <li>Transactional Emails</li>
-                                    <li>Promotional Push Notifications</li>
-                                    <li>Promotional Emails</li>
-                                </ul>
-                            </div>
-                            <div class="col-md-6">
-                                <p class="mb-2"><strong>Calculates Metrics:</strong></p>
-                                <ul class="small mb-0">
-                                    <li><strong>Promotional:</strong> Total sent ÷ Total users</li>
-                                    <li><strong>Transactional:</strong> Total sent ÷ Users who transacted</li>
-                                    <li>Separate results for UK and UAE</li>
-                                    <li>Automatic Google Sheets update</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="alert alert-info">
-                        <h6><i class="fas fa-info-circle me-2"></i>Dynamic Date Ranges Available!</h6>
-                        <p class="mb-2">
-                            <strong>Stats API Integration:</strong> This system now supports MoEngage Stats API for real-time data with exact date ranges.
-                        </p>
-                        <p class="mb-0">
-                            <strong>Current Status:</strong> If Stats API is enabled for your account, you'll get accurate data for your selected period. 
-                            Otherwise, the system will use existing reports with fixed date ranges (~Jan 1-2, 2026).
-                        </p>
-                    </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-info btn-lg">
-                            <i class="fas fa-download me-2"></i>
-                            Download Reports & Calculate Metrics
-                        </button>
-                    </div>
-                </form>
-            </div>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <h4 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Processing Time</h4>
+                    <p style="margin: 0; color: var(--text-secondary);">
+                        This process downloads and analyzes 4 separate campaign reports. 
+                        It may take 30-60 seconds to complete. Please be patient after clicking Calculate.
+                    </p>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-large w-full">
+                    Download Reports & Calculate Metrics
+                </button>
+            </form>
         </div>
-        
-        <div class="card mt-4">
-            <div class="card-header bg-secondary text-white">
-                <h6 class="mb-0">
-                    <i class="fas fa-question-circle me-2"></i>
-                    How It Works
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6>1. Report Generation</h6>
-                        <p class="small text-muted">System generates report filenames based on your selected date and downloads them via MoEngage Reports API.</p>
-                        
-                        <h6>2. Country Filtering</h6>
-                        <p class="small text-muted">Campaigns are automatically filtered by country based on campaign names containing "UK" or "UAE".</p>
-                    </div>
-                    <div class="col-md-6">
-                        <h6>3. User Base Calculation</h6>
-                        <p class="small text-muted">Uses existing user segments to determine total users and users who transacted in the period.</p>
-                        
-                        <h6>4. Results & Export</h6>
-                        <p class="small text-muted">Displays detailed metrics and automatically updates your Google Sheets with the results.</p>
-                    </div>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-header">
+            <h3 class="card-title">How It Works</h3>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-2">
+                <div>
+                    <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">1. Report Generation</h4>
+                    <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 24px;">System generates report filenames based on your selected date and downloads them via MoEngage Reports API.</p>
+                    
+                    <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">2. Country Filtering</h4>
+                    <p style="color: var(--text-secondary); font-size: 14px;">Campaigns are automatically filtered by country based on campaign names containing "UK" or "UAE".</p>
+                </div>
+                <div>
+                    <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">3. User Base Calculation</h4>
+                    <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 24px;">Uses existing user segments to determine total users and users who transacted in the period.</p>
+                    
+                    <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">4. Results & Export</h4>
+                    <p style="color: var(--text-secondary); font-size: 14px;">Displays detailed metrics and automatically updates your Google Sheets with the results.</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+// Set default date to yesterday
+document.addEventListener('DOMContentLoaded', function() {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const dateString = yesterday.toISOString().split('T')[0];
+    document.getElementById('end_date').value = dateString;
+});
+</script>
 {% endblock %}

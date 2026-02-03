@@ -3,204 +3,181 @@
 {% block title %}Communications Per User Results{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-12">
-        <div class="alert alert-success">
-            <h4><i class="fas fa-check-circle me-2"></i>Communications Per User Analysis Complete!</h4>
-            <p class="mb-1">Successfully analyzed communication patterns for the period: <strong>{{ results.period }}</strong></p>
-            {% if results.actual_period %}
-                <p class="mb-1"><small class="text-warning">⚠️ Actual data period: {{ results.actual_period }}</small></p>
-            {% endif %}
-            <p class="mb-0"><small class="text-info">📊 Data source: {{ results.data_source or 'Reports API' }}</small></p>
-            {% if sheets_updated %}
-                <small class="text-success">✅ Google Sheets updated successfully</small>
-            {% endif %}
-        </div>
-        
-        <!-- Summary Cards -->
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">
-                            <i class="fas fa-flag me-2"></i>UK Results
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row text-center">
-                            <div class="col-6">
-                                <h3 class="text-primary">{{ "%.3f"|format(results.uk.transactional_pn) }}</h3>
-                                <small class="text-muted">Transactional PN per User</small>
-                            </div>
-                            <div class="col-6">
-                                <h3 class="text-info">{{ "%.3f"|format(results.uk.transactional_email) }}</h3>
-                                <small class="text-muted">Transactional Email per User</small>
-                            </div>
-                        </div>
-                        <hr>
-                        <div class="row text-center">
-                            <div class="col-6">
-                                <h3 class="text-success">{{ "%.3f"|format(results.uk.promotional_pn) }}</h3>
-                                <small class="text-muted">Promotional PN per User</small>
-                            </div>
-                            <div class="col-6">
-                                <h3 class="text-warning">{{ "%.3f"|format(results.uk.promotional_email) }}</h3>
-                                <small class="text-muted">Promotional Email per User</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header bg-danger text-white">
-                        <h5 class="mb-0">
-                            <i class="fas fa-flag me-2"></i>UAE Results
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row text-center">
-                            <div class="col-6">
-                                <h3 class="text-primary">{{ "%.3f"|format(results.uae.transactional_pn) }}</h3>
-                                <small class="text-muted">Transactional PN per User</small>
-                            </div>
-                            <div class="col-6">
-                                <h3 class="text-info">{{ "%.3f"|format(results.uae.transactional_email) }}</h3>
-                                <small class="text-muted">Transactional Email per User</small>
-                            </div>
-                        </div>
-                        <hr>
-                        <div class="row text-center">
-                            <div class="col-6">
-                                <h3 class="text-success">{{ "%.3f"|format(results.uae.promotional_pn) }}</h3>
-                                <small class="text-muted">Promotional PN per User</small>
-                            </div>
-                            <div class="col-6">
-                                <h3 class="text-warning">{{ "%.3f"|format(results.uae.promotional_email) }}</h3>
-                                <small class="text-muted">Promotional Email per User</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Detailed Analysis Table -->
+<div style="max-width: 1000px; margin: 0 auto;">
+    <div class="alert alert-success">
+        <h4 style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">Communications Analysis Complete</h4>
+        <p style="margin-bottom: 8px;">Successfully analyzed communication patterns for the period: <strong>{{ results.period }}</strong></p>
+        {% if results.actual_period %}
+            <p style="margin-bottom: 8px; color: var(--warning-color);"><small>⚠️ Actual data period: {{ results.actual_period }}</small></p>
+        {% endif %}
+        <p style="margin-bottom: 8px; color: var(--text-secondary);"><small>📊 Data source: {{ results.data_source or 'Reports API' }}</small></p>
+        {% if sheets_updated %}
+            <small style="color: var(--success-color);">✅ Google Sheets updated successfully</small>
+        {% endif %}
+    </div>
+    
+    <!-- Summary Cards -->
+    <div class="grid grid-2 mb-5">
         <div class="card">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0">
-                    <i class="fas fa-table me-2"></i>
-                    Detailed Analysis
-                </h5>
+            <div class="card-header">
+                <h3 class="card-title">🇬🇧 UK Results</h3>
             </div>
             <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Metric</th>
-                                <th class="text-center">UK</th>
-                                <th class="text-center">UAE</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="table-primary">
-                                <td colspan="3"><strong>TRANSACTIONAL COMMUNICATIONS</strong></td>
-                            </tr>
-                            <tr>
-                                <td>Push Notifications per User</td>
-                                <td class="text-center">{{ "%.4f"|format(results.uk.transactional_pn) }}</td>
-                                <td class="text-center">{{ "%.4f"|format(results.uae.transactional_pn) }}</td>
-                            </tr>
-                            <tr>
-                                <td>Emails per User</td>
-                                <td class="text-center">{{ "%.4f"|format(results.uk.transactional_email) }}</td>
-                                <td class="text-center">{{ "%.4f"|format(results.uae.transactional_email) }}</td>
-                            </tr>
-                            <tr class="table-success">
-                                <td colspan="3"><strong>PROMOTIONAL COMMUNICATIONS</strong></td>
-                            </tr>
-                            <tr>
-                                <td>Push Notifications per User</td>
-                                <td class="text-center">{{ "%.4f"|format(results.uk.promotional_pn) }}</td>
-                                <td class="text-center">{{ "%.4f"|format(results.uae.promotional_pn) }}</td>
-                            </tr>
-                            <tr>
-                                <td>Emails per User</td>
-                                <td class="text-center">{{ "%.4f"|format(results.uk.promotional_email) }}</td>
-                                <td class="text-center">{{ "%.4f"|format(results.uae.promotional_email) }}</td>
-                            </tr>
-                            <tr class="table-warning">
-                                <td colspan="3"><strong>USER BASE</strong></td>
-                            </tr>
-                            <tr>
-                                <td>Total Users</td>
-                                <td class="text-center">{{ "{:,}".format(results.uk.total_users) }}</td>
-                                <td class="text-center">{{ "{:,}".format(results.uae.total_users) }}</td>
-                            </tr>
-                            <tr>
-                                <td>Users Who Transacted</td>
-                                <td class="text-center">{{ "{:,}".format(results.uk.transacted_users) }}</td>
-                                <td class="text-center">{{ "{:,}".format(results.uae.transacted_users) }}</td>
-                            </tr>
-                            <tr class="table-secondary">
-                                <td colspan="3"><strong>RAW COMMUNICATION COUNTS</strong></td>
-                            </tr>
-                            <tr>
-                                <td>Transactional PN Sent</td>
-                                <td class="text-center">{{ "{:,}".format(results.uk.raw_counts.transactional_pn) }}</td>
-                                <td class="text-center">{{ "{:,}".format(results.uae.raw_counts.transactional_pn) }}</td>
-                            </tr>
-                            <tr>
-                                <td>Transactional Emails Sent</td>
-                                <td class="text-center">{{ "{:,}".format(results.uk.raw_counts.transactional_email) }}</td>
-                                <td class="text-center">{{ "{:,}".format(results.uae.raw_counts.transactional_email) }}</td>
-                            </tr>
-                            <tr>
-                                <td>Promotional PN Sent</td>
-                                <td class="text-center">{{ "{:,}".format(results.uk.raw_counts.promotional_pn) }}</td>
-                                <td class="text-center">{{ "{:,}".format(results.uae.raw_counts.promotional_pn) }}</td>
-                            </tr>
-                            <tr>
-                                <td>Promotional Emails Sent</td>
-                                <td class="text-center">{{ "{:,}".format(results.uk.raw_counts.promotional_email) }}</td>
-                                <td class="text-center">{{ "{:,}".format(results.uae.raw_counts.promotional_email) }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="grid grid-2 text-center mb-4">
+                    <div>
+                        <h3 style="font-size: 32px; font-weight: 700; color: var(--primary-color); margin-bottom: 8px;">{{ "%.3f"|format(results.uk.transactional_pn) }}</h3>
+                        <p style="color: var(--text-secondary); font-size: 14px; margin: 0;">Transactional PN per User</p>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 32px; font-weight: 700; color: var(--primary-light); margin-bottom: 8px;">{{ "%.3f"|format(results.uk.transactional_email) }}</h3>
+                        <p style="color: var(--text-secondary); font-size: 14px; margin: 0;">Transactional Email per User</p>
+                    </div>
+                </div>
+                <div style="height: 1px; background: var(--border-color); margin: 24px 0;"></div>
+                <div class="grid grid-2 text-center">
+                    <div>
+                        <h3 style="font-size: 32px; font-weight: 700; color: var(--success-color); margin-bottom: 8px;">{{ "%.3f"|format(results.uk.promotional_pn) }}</h3>
+                        <p style="color: var(--text-secondary); font-size: 14px; margin: 0;">Promotional PN per User</p>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 32px; font-weight: 700; color: var(--warning-color); margin-bottom: 8px;">{{ "%.3f"|format(results.uk.promotional_email) }}</h3>
+                        <p style="color: var(--text-secondary); font-size: 14px; margin: 0;">Promotional Email per User</p>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <!-- Action Buttons -->
-        <div class="row mt-4">
-            <div class="col-md-4">
-                {% if sheets_updated %}
-                    <a href="{{ sheet_url }}" target="_blank" class="btn btn-success w-100">
-                        <i class="fas fa-external-link-alt me-2"></i>
-                        View Google Sheets
-                    </a>
-                {% else %}
-                    <button class="btn btn-secondary w-100" disabled>
-                        <i class="fas fa-times me-2"></i>
-                        Google Sheets (Not Available)
-                    </button>
-                {% endif %}
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">🇦🇪 UAE Results</h3>
             </div>
-            <div class="col-md-4">
-                <a href="{{ url_for('comms_per_user_form') }}" class="btn btn-info w-100">
-                    <i class="fas fa-calculator me-2"></i>
-                    Calculate Again
-                </a>
-            </div>
-            <div class="col-md-4">
-                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary w-100">
-                    <i class="fas fa-home me-2"></i>
-                    Back to Home
-                </a>
+            <div class="card-body">
+                <div class="grid grid-2 text-center mb-4">
+                    <div>
+                        <h3 style="font-size: 32px; font-weight: 700; color: var(--primary-color); margin-bottom: 8px;">{{ "%.3f"|format(results.uae.transactional_pn) }}</h3>
+                        <p style="color: var(--text-secondary); font-size: 14px; margin: 0;">Transactional PN per User</p>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 32px; font-weight: 700; color: var(--primary-light); margin-bottom: 8px;">{{ "%.3f"|format(results.uae.transactional_email) }}</h3>
+                        <p style="color: var(--text-secondary); font-size: 14px; margin: 0;">Transactional Email per User</p>
+                    </div>
+                </div>
+                <div style="height: 1px; background: var(--border-color); margin: 24px 0;"></div>
+                <div class="grid grid-2 text-center">
+                    <div>
+                        <h3 style="font-size: 32px; font-weight: 700; color: var(--success-color); margin-bottom: 8px;">{{ "%.3f"|format(results.uae.promotional_pn) }}</h3>
+                        <p style="color: var(--text-secondary); font-size: 14px; margin: 0;">Promotional PN per User</p>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 32px; font-weight: 700; color: var(--warning-color); margin-bottom: 8px;">{{ "%.3f"|format(results.uae.promotional_email) }}</h3>
+                        <p style="color: var(--text-secondary); font-size: 14px; margin: 0;">Promotional Email per User</p>
+                    </div>
+                </div>
             </div>
         </div>
+    </div>
+    
+    <!-- Detailed Analysis Table -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Detailed Analysis</h3>
+        </div>
+        <div class="card-body">
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: var(--gray-50); border-bottom: 2px solid var(--border-color);">
+                            <th style="padding: 16px; text-align: left; font-weight: 600; color: var(--text-primary);">Metric</th>
+                            <th style="padding: 16px; text-align: center; font-weight: 600; color: var(--text-primary);">UK</th>
+                            <th style="padding: 16px; text-align: center; font-weight: 600; color: var(--text-primary);">UAE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background: var(--primary-color); color: white;">
+                            <td style="padding: 12px 16px; font-weight: 600;" colspan="3">TRANSACTIONAL COMMUNICATIONS</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 12px 16px;">Push Notifications per User</td>
+                            <td style="padding: 12px 16px; text-align: center; font-weight: 600;">{{ "%.4f"|format(results.uk.transactional_pn) }}</td>
+                            <td style="padding: 12px 16px; text-align: center; font-weight: 600;">{{ "%.4f"|format(results.uae.transactional_pn) }}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 12px 16px;">Emails per User</td>
+                            <td style="padding: 12px 16px; text-align: center; font-weight: 600;">{{ "%.4f"|format(results.uk.transactional_email) }}</td>
+                            <td style="padding: 12px 16px; text-align: center; font-weight: 600;">{{ "%.4f"|format(results.uae.transactional_email) }}</td>
+                        </tr>
+                        <tr style="background: var(--success-color); color: white;">
+                            <td style="padding: 12px 16px; font-weight: 600;" colspan="3">PROMOTIONAL COMMUNICATIONS</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 12px 16px;">Push Notifications per User</td>
+                            <td style="padding: 12px 16px; text-align: center; font-weight: 600;">{{ "%.4f"|format(results.uk.promotional_pn) }}</td>
+                            <td style="padding: 12px 16px; text-align: center; font-weight: 600;">{{ "%.4f"|format(results.uae.promotional_pn) }}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 12px 16px;">Emails per User</td>
+                            <td style="padding: 12px 16px; text-align: center; font-weight: 600;">{{ "%.4f"|format(results.uk.promotional_email) }}</td>
+                            <td style="padding: 12px 16px; text-align: center; font-weight: 600;">{{ "%.4f"|format(results.uae.promotional_email) }}</td>
+                        </tr>
+                        <tr style="background: var(--warning-color); color: white;">
+                            <td style="padding: 12px 16px; font-weight: 600;" colspan="3">USER BASE</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 12px 16px;">Total Users</td>
+                            <td style="padding: 12px 16px; text-align: center; font-weight: 600;">{{ "{:,}".format(results.uk.total_users) }}</td>
+                            <td style="padding: 12px 16px; text-align: center; font-weight: 600;">{{ "{:,}".format(results.uae.total_users) }}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 12px 16px;">Users Who Transacted</td>
+                            <td style="padding: 12px 16px; text-align: center; font-weight: 600;">{{ "{:,}".format(results.uk.transacted_users) }}</td>
+                            <td style="padding: 12px 16px; text-align: center; font-weight: 600;">{{ "{:,}".format(results.uae.transacted_users) }}</td>
+                        </tr>
+                        <tr style="background: var(--gray-100);">
+                            <td style="padding: 12px 16px; font-weight: 600;" colspan="3">RAW COMMUNICATION COUNTS</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 12px 16px;">Transactional PN Sent</td>
+                            <td style="padding: 12px 16px; text-align: center; font-weight: 600;">{{ "{:,}".format(results.uk.raw_counts.transactional_pn) }}</td>
+                            <td style="padding: 12px 16px; text-align: center; font-weight: 600;">{{ "{:,}".format(results.uae.raw_counts.transactional_pn) }}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 12px 16px;">Transactional Emails Sent</td>
+                            <td style="padding: 12px 16px; text-align: center; font-weight: 600;">{{ "{:,}".format(results.uk.raw_counts.transactional_email) }}</td>
+                            <td style="padding: 12px 16px; text-align: center; font-weight: 600;">{{ "{:,}".format(results.uae.raw_counts.transactional_email) }}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 12px 16px;">Promotional PN Sent</td>
+                            <td style="padding: 12px 16px; text-align: center; font-weight: 600;">{{ "{:,}".format(results.uk.raw_counts.promotional_pn) }}</td>
+                            <td style="padding: 12px 16px; text-align: center; font-weight: 600;">{{ "{:,}".format(results.uae.raw_counts.promotional_pn) }}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px 16px;">Promotional Emails Sent</td>
+                            <td style="padding: 12px 16px; text-align: center; font-weight: 600;">{{ "{:,}".format(results.uk.raw_counts.promotional_email) }}</td>
+                            <td style="padding: 12px 16px; text-align: center; font-weight: 600;">{{ "{:,}".format(results.uae.raw_counts.promotional_email) }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="grid grid-3 mt-5">
+        {% if sheets_updated %}
+            <a href="{{ sheet_url }}" target="_blank" class="btn btn-primary btn-large">
+                View Google Sheets
+            </a>
+        {% else %}
+            <button class="btn btn-secondary btn-large" disabled>
+                Google Sheets (Not Available)
+            </button>
+        {% endif %}
+        <a href="{{ url_for('comms_per_user_form') }}" class="btn btn-primary btn-large">
+            Calculate Again
+        </a>
+        <a href="{{ url_for('index') }}" class="btn btn-secondary btn-large">
+            Back to Home
+        </a>
     </div>
 </div>
 {% endblock %}

@@ -355,14 +355,7 @@ class MTUWebAutomation:
 class CommsPerUserAutomation:
     def __init__(self):
         self.downloaded_reports = {}
-        self.stats_api = None
-        try:
-            # Try to initialize Stats API (will work once enabled by MoEngage)
-            from moengage_stats_api import MoEngageStatsAPI
-            self.stats_api = MoEngageStatsAPI()
-        except:
-            pass
-    
+        
     def get_date_range(self, end_date_str):
         """Get date range from month start to selected date"""
         try:
@@ -377,65 +370,6 @@ class CommsPerUserAutomation:
             
         except ValueError as e:
             return None, None
-    
-    def try_stats_api_first(self, start_date_str, end_date_str):
-        """Try Stats API first, fallback to reports if not available"""
-        
-        if not self.stats_api:
-            return None
-        
-        try:
-            print("🚀 Attempting Stats API (dynamic date ranges)...")
-            stats_data = self.stats_api.get_campaign_stats(start_date_str, end_date_str)
-            
-            if 'error' not in stats_data:
-                print("✅ Stats API successful! Using real-time data.")
-                return self.extract_comms_from_stats_api(stats_data, start_date_str, end_date_str)
-            else:
-                print(f"⚠️ Stats API not available: {stats_data['error']}")
-                return None
-                
-        except Exception as e:
-            print(f"⚠️ Stats API failed: {str(e)}")
-            return None
-    
-    def extract_comms_from_stats_api(self, stats_data, start_date, end_date):
-        """Extract communication counts from Stats API response"""
-        
-        # Initialize counters
-        results = {
-            'uk_transactional_pn': 0,
-            'uk_transactional_email': 0,
-            'uk_promotional_pn': 0,
-            'uk_promotional_email': 0,
-            'uae_transactional_pn': 0,
-            'uae_transactional_email': 0,
-            'uae_promotional_pn': 0,
-            'uae_promotional_email': 0
-        }
-        
-        # Parse Stats API data
-        campaign_data = stats_data.get('data', {})
-        
-        for campaign_id, campaign_stats_list in campaign_data.items():
-            for campaign_stats in campaign_stats_list:
-                platforms = campaign_stats.get('platforms', {})
-                
-                for platform_name, platform_data in platforms.items():
-                    locales = platform_data.get('locales', {})
-                    
-                    for locale_name, locale_data in locales.items():
-                        variations = locale_data.get('variations', {})
-                        all_variations = variations.get('all_variations', {})
-                        performance_stats = all_variations.get('performance_stats', {})
-                        
-                        sent_count = performance_stats.get('sent', 0)
-                        
-                        # TODO: Need campaign name to classify by country/type
-                        # This requires additional Campaign Details API call
-                        # For now, aggregate all data
-        
-        return results
         
     def get_date_range(self, end_date_str):
         """Get date range from month start to selected date"""
@@ -741,45 +675,7 @@ class CommsPerUserAutomation:
                 'next_action': 'Please visit the segment URLs, get the user counts, and proceed to step 2'
             }
         
-        # TRY STATS API FIRST (if enabled)
-        stats_result = self.try_stats_api_first(start_date_api, end_date_api)
-        if stats_result:
-            # Stats API worked - use real-time data with exact date ranges
-            results = {
-                'period': f"{start_date_api} to {end_date_api}",
-                'data_source': 'Stats API (Real-time)',
-                'uk': {
-                    'transactional_pn': round(stats_result['uk_transactional_pn'] / user_counts_manual['uk_transacted_users'], 4) if user_counts_manual['uk_transacted_users'] > 0 else 0,
-                    'transactional_email': round(stats_result['uk_transactional_email'] / user_counts_manual['uk_transacted_users'], 4) if user_counts_manual['uk_transacted_users'] > 0 else 0,
-                    'promotional_pn': round(stats_result['uk_promotional_pn'] / user_counts_manual['uk_total_users'], 4) if user_counts_manual['uk_total_users'] > 0 else 0,
-                    'promotional_email': round(stats_result['uk_promotional_email'] / user_counts_manual['uk_total_users'], 4) if user_counts_manual['uk_total_users'] > 0 else 0,
-                    'total_users': user_counts_manual['uk_total_users'],
-                    'transacted_users': user_counts_manual['uk_transacted_users'],
-                    'raw_counts': {
-                        'transactional_pn': stats_result['uk_transactional_pn'],
-                        'transactional_email': stats_result['uk_transactional_email'],
-                        'promotional_pn': stats_result['uk_promotional_pn'],
-                        'promotional_email': stats_result['uk_promotional_email']
-                    }
-                },
-                'uae': {
-                    'transactional_pn': round(stats_result['uae_transactional_pn'] / user_counts_manual['uae_transacted_users'], 4) if user_counts_manual['uae_transacted_users'] > 0 else 0,
-                    'transactional_email': round(stats_result['uae_transactional_email'] / user_counts_manual['uae_transacted_users'], 4) if user_counts_manual['uae_transacted_users'] > 0 else 0,
-                    'promotional_pn': round(stats_result['uae_promotional_pn'] / user_counts_manual['uae_total_users'], 4) if user_counts_manual['uae_total_users'] > 0 else 0,
-                    'promotional_email': round(stats_result['uae_promotional_email'] / user_counts_manual['uae_total_users'], 4) if user_counts_manual['uae_total_users'] > 0 else 0,
-                    'total_users': user_counts_manual['uae_total_users'],
-                    'transacted_users': user_counts_manual['uae_transacted_users'],
-                    'raw_counts': {
-                        'transactional_pn': stats_result['uae_transactional_pn'],
-                        'transactional_email': stats_result['uae_transactional_email'],
-                        'promotional_pn': stats_result['uae_promotional_pn'],
-                        'promotional_email': stats_result['uae_promotional_email']
-                    }
-                }
-            }
-            return results
-        
-        # FALLBACK TO REPORTS API (current approach)
+        # USE REPORTS API (current approach)
         print("📊 Using Reports API (fixed date ranges)")
         
         # Static report filenames (as configured in MoEngage)
