@@ -7,7 +7,11 @@
     <div class="col-md-12">
         <div class="alert alert-success">
             <h4><i class="fas fa-check-circle me-2"></i>Communications Per User Analysis Complete!</h4>
-            <p class="mb-0">Successfully analyzed communication patterns for the period: <strong>{{ results.period }}</strong></p>
+            <p class="mb-1">Successfully analyzed communication patterns for the period: <strong>{{ results.period }}</strong></p>
+            {% if results.actual_period %}
+                <p class="mb-1"><small class="text-warning">⚠️ Actual data period: {{ results.actual_period }}</small></p>
+            {% endif %}
+            <p class="mb-0"><small class="text-info">📊 Data source: {{ results.data_source or 'Reports API' }}</small></p>
             {% if sheets_updated %}
                 <small class="text-success">✅ Google Sheets updated successfully</small>
             {% endif %}
