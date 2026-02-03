@@ -465,18 +465,177 @@ class CommsPerUserAutomation:
             return {'error': f"Error parsing report: {str(e)}"}
     
     def get_user_counts(self, end_date_str):
-        """Get user counts for calculations"""
-        # For now, we'll use placeholder values
-        # In production, this would create/query segments
+        """Get user counts using Segmentation API"""
         
+        # Get date range
+        start_date, end_date = self.get_date_range(end_date_str)
+        if not start_date:
+            return {'error': 'Invalid date range'}
+        
+        start_date_str = start_date.strftime('%Y-%m-%d')
+        end_date_str = end_date.strftime('%Y-%m-%d')
+        
+        countries = {'UK': 'GB', 'UAE': 'AE'}
+        user_counts = {}
+        
+        for country_name, country_code in countries.items():
+            
+            # 1. Create segment for total users in country
+            total_segment_name = f"CommsCalc_{country_code}_Total_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
+            total_filters = {
+                "filter_operator": "and",
+                "filters": [
+                    {
+                        "filter_type": "user_attributes",
+                        "name": "country",
+                        "data_type": "string",
+                        "operator": "in",
+                        "value": [country_code],
+                        "negate": False,
+                        "case_sensitive": False
+                    }
+                ]
+            }
+            
+            total_segment = self.create_segment(
+                total_segment_name,
+                f"Total {country_name} users for Communications Per User calculation",
+                total_filters
+            )
+            
+            if 'error' in total_segment:
+                return {'error': f"Failed to create total users segment for {country_name}: {total_segment['error']}"}
+            
+            # 2. Create segment for users who transacted in the period
+            transacted_segment_name = f"CommsCalc_{country_code}_Transacted_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
+            transacted_filters = {
+                "filter_operator": "and",
+                "filters": [
+                    {
+                        "filter_type": "user_attributes",
+                        "name": "country",
+                        "data_type": "string",
+                        "operator": "in",
+                        "value": [country_code],
+                        "negate": False,
+                        "case_sensitive": False
+                    },
+                    {
+                        "filter_type": "actions",
+                        "attributes": {
+                            "filter_operator": "and",
+                            "filters": []
+                        },
+                        "executed": True,
+                        "primary_time_range": {
+                            "type": "between",
+                            "value": f"{start_date_str}T00:00:00.000Z",
+                            "value1": f"{end_date_str}T23:59:59.999Z",
+                            "value_type": "absolute",
+                            "period_unit": "days"
+                        },
+                        "action_name": "ORDER",
+                        "execution": {
+                            "count": 1,
+                            "type": "atleast"
+                        }
+                    }
+                ]
+            }
+            
+            transacted_segment = self.create_segment(
+                transacted_segment_name,
+                f"{country_name} users who transacted from {start_date_str} to {end_date_str}",
+                transacted_filters
+            )
+            
+            if 'error' in transacted_segment:
+                return {'error': f"Failed to create transacted users segment for {country_name}: {transacted_segment['error']}"}
+            
+            # Store segment info for manual count retrieval
+            user_counts[f'{country_name.lower()}_total_segment'] = {
+                'name': total_segment['name'],
+                'id': total_segment['id'],
+                'url': total_segment['url']
+            }
+            user_counts[f'{country_name.lower()}_transacted_segment'] = {
+                'name': transacted_segment['name'],
+                'id': transacted_segment['id'],
+                'url': transacted_segment['url']
+            }
+        
+        # Note: MoEngage API doesn't return segment counts automatically
+        # User will need to manually get counts from dashboard
         return {
-            'uk_total_users': 289564,
-            'uae_total_users': 598837,
-            'uk_transacted_users': 125659,
-            'uae_transacted_users': 247692
+            'segments_created': True,
+            'uk_total_segment': user_counts['uk_total_segment'],
+            'uk_transacted_segment': user_counts['uk_transacted_segment'],
+            'uae_total_segment': user_counts['uae_total_segment'],
+            'uae_transacted_segment': user_counts['uae_transacted_segment'],
+            'period': f"{start_date_str} to {end_date_str}",
+            'instructions': "Please visit the segment URLs to get the user counts and enter them manually."
         }
     
-    def calculate_comms_per_user(self, end_date_str):
+    def create_segment(self, segment_name, description, filters):
+        """Create a segment using MoEngage Custom Segment API"""
+        try:
+            url = f"https://api-{MOENGAGE_CONFIG['data_center']}.moengage.com/v3/custom-segments/"
+            
+            # Auth
+            auth_string = f"{MOENGAGE_CONFIG['workspace_id']}:{MOENGAGE_CONFIG['data_api_key']}"
+            encoded_auth = base64.b64encode(auth_string.encode()).decode()
+            
+            headers = {
+                'Authorization': f'Basic {encoded_auth}',
+                'Content-Type': 'application/json',
+                'MOE-APPKEY': MOENGAGE_CONFIG['workspace_id']
+            }
+            
+            # Add random component to description to avoid duplicate detection
+            random_id = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+            unique_description = f"{description} [ID: {random_id}]"
+            
+            payload = {
+                "name": segment_name,
+                "description": unique_description,
+                "included_filters": filters
+            }
+            
+            response = requests.post(url, json=payload, headers=headers, timeout=15)
+            
+            if response.status_code in [200, 201]:
+                data = response.json()
+                segment_id = data['data']['id']
+                return {
+                    'name': segment_name,
+                    'id': segment_id,
+                    'description': unique_description,
+                    'url': f"https://dashboard-01.moengage.com/v4/segmentation/all-segments/custom-segments/{segment_id}",
+                    'status': 'created'
+                }
+            elif response.status_code == 409:
+                # Segment already exists - reuse it
+                try:
+                    error_data = response.json()
+                    existing_name = error_data.get('error', {}).get('existing_cs_name', 'Unknown')
+                    existing_id = error_data.get('error', {}).get('existing_cs_id', 'Unknown')
+                    
+                    return {
+                        'name': existing_name,
+                        'id': existing_id,
+                        'description': f"Reusing existing segment: {existing_name}",
+                        'url': f"https://dashboard-01.moengage.com/v4/segmentation/all-segments/custom-segments/{existing_id}",
+                        'status': 'reused'
+                    }
+                except:
+                    return {'error': f"Segment conflict but couldn't parse existing segment info"}
+            else:
+                return {'error': f"API Error: {response.status_code} - {response.text}"}
+                
+        except Exception as e:
+            return {'error': f"Error creating segment: {str(e)}"}
+    
+    def calculate_comms_per_user(self, end_date_str, user_counts_manual=None):
         """Calculate communications per user metrics"""
         
         # Get date range for API parameters
@@ -487,6 +646,19 @@ class CommsPerUserAutomation:
         # Format dates for API (YYYY-MM-DD format)
         start_date_api = start_date.strftime('%Y-%m-%d')
         end_date_api = end_date.strftime('%Y-%m-%d')
+        
+        # If no manual user counts provided, create segments first
+        if not user_counts_manual:
+            segment_result = self.get_user_counts(end_date_str)
+            if 'error' in segment_result:
+                return segment_result
+            
+            # Return segment info for manual count collection
+            return {
+                'step': 'segments_created',
+                'segments': segment_result,
+                'next_action': 'Please visit the segment URLs, get the user counts, and proceed to step 2'
+            }
         
         # Static report filenames (as configured in MoEngage)
         reports = {
@@ -512,11 +684,8 @@ class CommsPerUserAutomation:
             
             report_data[report_type] = parsed_data
         
-        # Get user counts
-        user_counts = self.get_user_counts(end_date_str)
-        
-        if 'error' in user_counts:
-            return user_counts
+        # Use manual user counts
+        user_counts = user_counts_manual
         
         # Calculate metrics
         results = {
@@ -626,27 +795,60 @@ def calculate_comms_per_user():
             flash('Please select an end date', 'error')
             return redirect(url_for('comms_per_user_form'))
         
-        result = comms_automation.calculate_comms_per_user(end_date)
+        # Check if this is step 2 (with manual user counts)
+        if 'uk_total_users' in request.form:
+            # Step 2: Calculate with manual user counts
+            try:
+                user_counts = {
+                    'uk_total_users': int(request.form.get('uk_total_users', 0)),
+                    'uk_transacted_users': int(request.form.get('uk_transacted_users', 0)),
+                    'uae_total_users': int(request.form.get('uae_total_users', 0)),
+                    'uae_transacted_users': int(request.form.get('uae_transacted_users', 0))
+                }
+                
+                result = comms_automation.calculate_comms_per_user(end_date, user_counts)
+                
+                if 'error' in result:
+                    flash(f'Error: {result["error"]}', 'error')
+                    return redirect(url_for('comms_per_user_form'))
+                
+                # Update Google Sheets (if credentials available)
+                sheets_updated = False
+                try:
+                    credentials_json = os.environ.get('GOOGLE_CREDENTIALS_JSON')
+                    if credentials_json or os.path.exists('google_credentials.json'):
+                        update_comms_google_sheets(result)
+                        sheets_updated = True
+                except Exception as e:
+                    print(f"Warning: Could not update Google Sheets: {str(e)}")
+                    flash(f'Warning: Could not update Google Sheets: {str(e)}', 'warning')
+                
+                return render_template('comms_per_user_results.html', 
+                                     results=result,
+                                     sheets_updated=sheets_updated,
+                                     sheet_url=f"https://docs.google.com/spreadsheets/d/{GOOGLE_SHEET_ID}")
+                
+            except ValueError as e:
+                flash('Please enter valid numbers for all user counts', 'error')
+                return redirect(url_for('comms_per_user_form'))
         
-        if 'error' in result:
-            flash(f'Error: {result["error"]}', 'error')
+        else:
+            # Step 1: Create segments
+            result = comms_automation.calculate_comms_per_user(end_date)
+            
+            if 'error' in result:
+                flash(f'Error: {result["error"]}', 'error')
+                return redirect(url_for('comms_per_user_form'))
+            
+            if result.get('step') == 'segments_created':
+                # Show segments and ask for manual counts
+                return render_template('comms_segments_created.html', 
+                                     segments=result['segments'],
+                                     end_date=end_date)
+            
+            # This shouldn't happen with the new flow, but keep as fallback
+            flash('Unexpected result from calculation', 'error')
             return redirect(url_for('comms_per_user_form'))
-        
-        # Update Google Sheets (if credentials available)
-        sheets_updated = False
-        try:
-            credentials_json = os.environ.get('GOOGLE_CREDENTIALS_JSON')
-            if credentials_json or os.path.exists('google_credentials.json'):
-                update_comms_google_sheets(result)
-                sheets_updated = True
-        except Exception as e:
-            print(f"Warning: Could not update Google Sheets: {str(e)}")
-            flash(f'Warning: Could not update Google Sheets: {str(e)}', 'warning')
-        
-        return render_template('comms_per_user_results.html', 
-                             results=result,
-                             sheets_updated=sheets_updated,
-                             sheet_url=f"https://docs.google.com/spreadsheets/d/{GOOGLE_SHEET_ID}")
         
     except Exception as e:
         flash(f'Error calculating Communications Per User: {str(e)}', 'error')

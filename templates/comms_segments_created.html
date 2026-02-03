@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Segments Created - Enter User Counts{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="alert alert-success">
+            <h4><i class="fas fa-check-circle me-2"></i>Segments Created Successfully!</h4>
+            <p class="mb-0">User count segments have been created for period: <strong>{{ segments.period }}</strong></p>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-users me-2"></i>
+                    Step 2: Get User Counts from MoEngage Dashboard
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">
+                    Please visit each segment URL below, note the user count, and enter the values in the form.
+                </p>
+                
+                <!-- Segment Links -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card border-primary">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0">🇬🇧 UK Segments</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <strong>Total UK Users:</strong><br>
+                                    <small class="text-muted">{{ segments.uk_total_segment.name }}</small><br>
+                                    <a href="{{ segments.uk_total_segment.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-external-link-alt me-1"></i>View Segment
+                                    </a>
+                                </div>
+                                <div>
+                                    <strong>UK Users Who Transacted:</strong><br>
+                                    <small class="text-muted">{{ segments.uk_transacted_segment.name }}</small><br>
+                                    <a href="{{ segments.uk_transacted_segment.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-external-link-alt me-1"></i>View Segment
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card border-danger">
+                            <div class="card-header bg-danger text-white">
+                                <h6 class="mb-0">🇦🇪 UAE Segments</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <strong>Total UAE Users:</strong><br>
+                                    <small class="text-muted">{{ segments.uae_total_segment.name }}</small><br>
+                                    <a href="{{ segments.uae_total_segment.url }}" target="_blank" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-external-link-alt me-1"></i>View Segment
+                                    </a>
+                                </div>
+                                <div>
+                                    <strong>UAE Users Who Transacted:</strong><br>
+                                    <small class="text-muted">{{ segments.uae_transacted_segment.name }}</small><br>
+                                    <a href="{{ segments.uae_transacted_segment.url }}" target="_blank" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-external-link-alt me-1"></i>View Segment
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- User Count Input Form -->
+                <form method="POST" action="{{ url_for('calculate_comms_per_user') }}">
+                    <input type="hidden" name="end_date" value="{{ end_date }}">
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>How to Get User Counts:</h6>
+                        <ol class="mb-0">
+                            <li>Click each "View Segment" link above (opens in new tab)</li>
+                            <li>Wait for the segment to load in MoEngage dashboard</li>
+                            <li>Look for the user count number (usually displayed prominently)</li>
+                            <li>Enter the count in the corresponding field below</li>
+                            <li>Repeat for all 4 segments</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">🇬🇧 UK User Counts</h6>
+                            <div class="mb-3">
+                                <label for="uk_total_users" class="form-label">Total UK Users</label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="uk_total_users" 
+                                       name="uk_total_users" 
+                                       required
+                                       min="0"
+                                       placeholder="Enter count from segment">
+                            </div>
+                            <div class="mb-3">
+                                <label for="uk_transacted_users" class="form-label">UK Users Who Transacted</label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="uk_transacted_users" 
+                                       name="uk_transacted_users" 
+                                       required
+                                       min="0"
+                                       placeholder="Enter count from segment">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6 class="text-danger">🇦🇪 UAE User Counts</h6>
+                            <div class="mb-3">
+                                <label for="uae_total_users" class="form-label">Total UAE Users</label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="uae_total_users" 
+                                       name="uae_total_users" 
+                                       required
+                                       min="0"
+                                       placeholder="Enter count from segment">
+                            </div>
+                            <div class="mb-3">
+                                <label for="uae_transacted_users" class="form-label">UAE Users Who Transacted</label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="uae_transacted_users" 
+                                       name="uae_transacted_users" 
+                                       required
+                                       min="0"
+                                       placeholder="Enter count from segment">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-clock me-2"></i>Next Step:</h6>
+                        <p class="mb-0">
+                            After entering all user counts, click "Calculate Communications Per User" to download 
+                            reports and generate the final metrics.
+                        </p>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-calculator me-2"></i>
+                            Calculate Communications Per User
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <a href="{{ url_for('comms_per_user_form') }}" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Back to Date Selection
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-home me-2"></i>
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
