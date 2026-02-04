@@ -675,8 +675,180 @@ class CommsPerUserAutomation:
                 'next_action': 'Please visit the segment URLs, get the user counts, and proceed to step 2'
             }
         
-        # USE REPORTS API (current approach)
-        print("📊 Using Reports API (fixed date ranges)")
+    def try_stats_api_first(self, start_date_api, end_date_api):
+        """
+        Try to use Stats API first for real-time data with exact date ranges
+        Falls back to None if Stats API is not available
+        """
+        
+        # Stats API endpoint
+        stats_url = f"https://api-{MOENGAGE_CONFIG['data_center']}.moengage.com/core-services/v1/campaign-stats"
+        
+        # Correct authentication method (discovered through testing)
+        auth_string = f"{MOENGAGE_CONFIG['workspace_id']}:{MOENGAGE_CONFIG['campaign_api_key']}"
+        encoded_auth = base64.b64encode(auth_string.encode()).decode()
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Basic {encoded_auth}',
+            'MOE-APPKEY': MOENGAGE_CONFIG['workspace_id'],
+            'APP_SECRET_KEY': MOENGAGE_CONFIG['campaign_api_key']
+        }
+        
+        # Request payload based on MoEngage documentation
+        payload = {
+            'request_id': f"comms_per_user_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            'start_date': start_date_api,
+            'end_date': end_date_api,
+            'attribution_type': 'TOTAL_CONVERSIONS',
+            'metric_type': 'TOTAL',
+            'offset': 0,
+            'limit': 10
+        }
+        
+        try:
+            print(f"📡 Trying Stats API: {start_date_api} to {end_date_api}")
+            response = requests.post(stats_url, json=payload, headers=headers, timeout=30)
+            
+            print(f"Stats API Status: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                print(f"✅ Stats API Success! Total campaigns: {data.get('total_campaigns', 0)}")
+                
+                # Extract communication counts by country and type
+                results = self.extract_stats_api_communication_counts(data, start_date_api, end_date_api)
+                return results
+                
+            elif response.status_code == 403:
+                print(f"📊 Stats API not enabled - falling back to Reports API")
+                return None
+            else:
+                print(f"📊 Stats API error ({response.status_code}) - falling back to Reports API")
+                return None
+                
+        except Exception as e:
+            print(f"📊 Stats API exception - falling back to Reports API: {str(e)}")
+            return None
+    
+    def extract_stats_api_communication_counts(self, stats_data, start_date, end_date):
+        """
+        Extract communication counts by country and type from Stats API response
+        """
+        
+        # Initialize counters
+        results = {
+            'uk_transactional_pn': 0,
+            'uk_transactional_email': 0,
+            'uk_promotional_pn': 0,
+            'uk_promotional_email': 0,
+            'uae_transactional_pn': 0,
+            'uae_transactional_email': 0,
+            'uae_promotional_pn': 0,
+            'uae_promotional_email': 0
+        }
+        
+        # Parse campaign data from Stats API response
+        campaign_data = stats_data.get('data', {})
+        
+        for campaign_id, campaign_stats_list in campaign_data.items():
+            for campaign_stats in campaign_stats_list:
+                
+                # Get campaign name to determine country and type
+                campaign_name = campaign_stats.get('campaign_name', '').lower()
+                
+                # Parse platforms (push/email)
+                platforms = campaign_stats.get('platforms', {})
+                
+                for platform_name, platform_data in platforms.items():
+                    # Determine if this is push or email
+                    is_push = platform_name.lower() in ['android', 'ios', 'web', 'mweb']
+                    is_email = platform_name.lower() == 'email'
+                    
+                    if not (is_push or is_email):
+                        continue
+                    
+                    # Get sent count from platform data
+                    locales = platform_data.get('locales', {})
+                    sent_count = 0
+                    
+                    for locale_name, locale_data in locales.items():
+                        variations = locale_data.get('variations', {})
+                        all_variations = variations.get('all_variations', {})
+                        performance_stats = all_variations.get('performance_stats', {})
+                        sent_count += performance_stats.get('sent', 0)
+                    
+                    # Classify by country and type
+                    is_uk = 'uk' in campaign_name
+                    is_uae = 'uae' in campaign_name
+                    is_transactional = any(word in campaign_name for word in ['transactional', 'tx', 'trans'])
+                    is_promotional = not is_transactional  # Default to promotional
+                    
+                    # Aggregate counts
+                    if is_uk and is_push and is_transactional:
+                        results['uk_transactional_pn'] += sent_count
+                    elif is_uk and is_push and is_promotional:
+                        results['uk_promotional_pn'] += sent_count
+                    elif is_uk and is_email and is_transactional:
+                        results['uk_transactional_email'] += sent_count
+                    elif is_uk and is_email and is_promotional:
+                        results['uk_promotional_email'] += sent_count
+                    elif is_uae and is_push and is_transactional:
+                        results['uae_transactional_pn'] += sent_count
+                    elif is_uae and is_push and is_promotional:
+                        results['uae_promotional_pn'] += sent_count
+                    elif is_uae and is_email and is_transactional:
+                        results['uae_transactional_email'] += sent_count
+                    elif is_uae and is_email and is_promotional:
+                        results['uae_promotional_email'] += sent_count
+        
+        print(f"📊 Stats API extracted counts:")
+        for key, value in results.items():
+            if value > 0:
+                print(f"  {key}: {value:,}")
+        
+        return results
+
+        # TRY STATS API FIRST (if enabled)
+        stats_result = self.try_stats_api_first(start_date_api, end_date_api)
+        if stats_result:
+            # Stats API worked - use real-time data with exact date ranges
+            results = {
+                'period': f"{start_date_api} to {end_date_api}",
+                'data_source': 'Stats API (Real-time)',
+                'uk': {
+                    'transactional_pn': round(stats_result['uk_transactional_pn'] / user_counts_manual['uk_transacted_users'], 4) if user_counts_manual['uk_transacted_users'] > 0 else 0,
+                    'transactional_email': round(stats_result['uk_transactional_email'] / user_counts_manual['uk_transacted_users'], 4) if user_counts_manual['uk_transacted_users'] > 0 else 0,
+                    'promotional_pn': round(stats_result['uk_promotional_pn'] / user_counts_manual['uk_total_users'], 4) if user_counts_manual['uk_total_users'] > 0 else 0,
+                    'promotional_email': round(stats_result['uk_promotional_email'] / user_counts_manual['uk_total_users'], 4) if user_counts_manual['uk_total_users'] > 0 else 0,
+                    'total_users': user_counts_manual['uk_total_users'],
+                    'transacted_users': user_counts_manual['uk_transacted_users'],
+                    'raw_counts': {
+                        'transactional_pn': stats_result['uk_transactional_pn'],
+                        'transactional_email': stats_result['uk_transactional_email'],
+                        'promotional_pn': stats_result['uk_promotional_pn'],
+                        'promotional_email': stats_result['uk_promotional_email']
+                    }
+                },
+                'uae': {
+                    'transactional_pn': round(stats_result['uae_transactional_pn'] / user_counts_manual['uae_transacted_users'], 4) if user_counts_manual['uae_transacted_users'] > 0 else 0,
+                    'transactional_email': round(stats_result['uae_transactional_email'] / user_counts_manual['uae_transacted_users'], 4) if user_counts_manual['uae_transacted_users'] > 0 else 0,
+                    'promotional_pn': round(stats_result['uae_promotional_pn'] / user_counts_manual['uae_total_users'], 4) if user_counts_manual['uae_total_users'] > 0 else 0,
+                    'promotional_email': round(stats_result['uae_promotional_email'] / user_counts_manual['uae_total_users'], 4) if user_counts_manual['uae_total_users'] > 0 else 0,
+                    'total_users': user_counts_manual['uae_total_users'],
+                    'transacted_users': user_counts_manual['uae_transacted_users'],
+                    'raw_counts': {
+                        'transactional_pn': stats_result['uae_transactional_pn'],
+                        'transactional_email': stats_result['uae_transactional_email'],
+                        'promotional_pn': stats_result['uae_promotional_pn'],
+                        'promotional_email': stats_result['uae_promotional_email']
+                    }
+                }
+            }
+            return results
+        
+        # FALLBACK TO REPORTS API (current approach)
+        print("📊 Stats API not available - using Reports API (fixed date ranges)")
         
         # Static report filenames (as configured in MoEngage)
         # NOTE: These reports have FIXED date ranges and cannot be changed via API
