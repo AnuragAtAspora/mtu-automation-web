@@ -1243,12 +1243,12 @@ def calculate_mtu():
         countries = ['UK', 'UAE']
         
         for country in countries:
-            segment_counts[f'{country}_all_users'] = int(request.form.get(f'{country.lower()}_all_users', 0))
-            segment_counts[f'{country}_active_users'] = int(request.form.get(f'{country.lower()}_active_users', 0))
-            segment_counts[f'{country}_push_received'] = int(request.form.get(f'{country.lower()}_push_received', 0))
-            segment_counts[f'{country}_push_received_active'] = int(request.form.get(f'{country.lower()}_push_received_active', 0))
-            segment_counts[f'{country}_email_received'] = int(request.form.get(f'{country.lower()}_email_received', 0))
-            segment_counts[f'{country}_email_received_active'] = int(request.form.get(f'{country.lower()}_email_received_active', 0))
+            segment_counts[f'{country}_all_users'] = int(request.form.get(f'{country_name.lower()}_all_users', 0))
+            segment_counts[f'{country}_active_users'] = int(request.form.get(f'{country_name.lower()}_active_users', 0))
+            segment_counts[f'{country}_push_received'] = int(request.form.get(f'{country_name.lower()}_push_received', 0))
+            segment_counts[f'{country}_push_received_active'] = int(request.form.get(f'{country_name.lower()}_push_received_active', 0))
+            segment_counts[f'{country}_email_received'] = int(request.form.get(f'{country_name.lower()}_email_received', 0))
+            segment_counts[f'{country}_email_received_active'] = int(request.form.get(f'{country_name.lower()}_email_received_active', 0))
         
         period_info = request.form.get('period', f"Generated on {datetime.now().strftime('%Y-%m-%d')}")
         
@@ -1693,7 +1693,7 @@ def create_metrics_segments(start_date, end_date):
         result = automation.create_segment(segment_name, f"All {country_name} users", filters)
         if 'error' not in result:
             result['display_name'] = f"{country_name} - All Users"
-            result['field_name'] = f"{country.lower()}_total_users"
+            result['field_name'] = f"{country_name.lower()}_total_users"
             segments.append(result)
         
         # 2. Active users (60 days) - with ORDER sub-events
@@ -1784,7 +1784,7 @@ def create_metrics_segments(start_date, end_date):
         result = automation.create_segment(segment_name, f"{country_name} active users (60d)", filters)
         if 'error' not in result:
             result['display_name'] = f"{country_name} - Active Users (60 days)"
-            result['field_name'] = f"{country.lower()}_active_users"
+            result['field_name'] = f"{country_name.lower()}_active_users"
             segments.append(result)
         
         # 3. Users who received push/email - using notification received events
@@ -1892,7 +1892,7 @@ def create_metrics_segments(start_date, end_date):
             result = automation.create_segment(segment_name, f"{country_name} users who received {channel.lower()}", filters)
             if 'error' not in result:
                 result['display_name'] = f"{country_name} - Received {channel}"
-                result['field_name'] = f"{country.lower()}_{channel.lower()}_received"
+                result['field_name'] = f"{country_name.lower()}_{channel.lower()}_received"
                 segments.append(result)
             
             # 4. Active users who received communications
@@ -2129,7 +2129,7 @@ def create_metrics_segments(start_date, end_date):
             result = automation.create_segment(segment_name, f"{country_name} active users who received {channel.lower()}", filters)
             if 'error' not in result:
                 result['display_name'] = f"{country_name} - Active Users Received {channel}"
-                result['field_name'] = f"{country.lower()}_{channel.lower()}_received_active"
+                result['field_name'] = f"{country_name.lower()}_{channel.lower()}_received_active"
                 segments.append(result)
         
         # 5. Users who unsubscribed from push/email
@@ -2174,7 +2174,7 @@ def create_metrics_segments(start_date, end_date):
             result = automation.create_segment(segment_name, f"{country_name} users who unsubscribed from {channel.lower()}", filters)
             if 'error' not in result:
                 result['display_name'] = f"{country_name} - Unsubscribed {channel}"
-                result['field_name'] = f"{country.lower()}_{channel.lower()}_unsubscribed"
+                result['field_name'] = f"{country_name.lower()}_{channel.lower()}_unsubscribed"
                 segments.append(result)
     
     return {
