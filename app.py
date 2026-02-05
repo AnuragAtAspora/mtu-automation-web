@@ -58,7 +58,7 @@ class MTUWebAutomation:
             return None, None
     
     def create_segment(self, segment_name, description, filters):
-        """Create a segment using MoEngage Custom Segment API"""
+        """Create a segment using MoEngage Custom Segment API with better duplicate handling"""
         try:
             url = f"https://api-{MOENGAGE_CONFIG['data_center']}.moengage.com/v3/custom-segments/"
             
@@ -72,9 +72,23 @@ class MTUWebAutomation:
                 'MOE-APPKEY': MOENGAGE_CONFIG['workspace_id']
             }
             
-            # Add random component to description to avoid duplicate detection
-            random_id = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
-            unique_description = f"{description} [ID: {random_id}]"
+            # Add unique identifier to description to make filters unique
+            unique_id = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+            unique_description = f"{description} [Report-{unique_id}]"
+            
+            # Add a unique comment to filters to avoid duplicate detection
+            if 'filters' in filters and isinstance(filters['filters'], list):
+                # Add a unique user attribute filter that doesn't affect results
+                unique_filter = {
+                    "filter_type": "user_attributes",
+                    "name": "report_id",
+                    "data_type": "string", 
+                    "operator": "not_equal",
+                    "value": [f"report_{unique_id}"],
+                    "negate": False,
+                    "case_sensitive": False
+                }
+                filters['filters'].append(unique_filter)
             
             payload = {
                 "name": segment_name,
@@ -93,12 +107,13 @@ class MTUWebAutomation:
                     'id': segment_id,
                     'description': unique_description,
                     'url': f"https://dashboard-01.moengage.com/v4/segmentation/all-segments/custom-segments/{segment_id}",
-                    'status': 'created'
+                    'status': 'created',
+                    'unique_id': unique_id
                 }
                 self.created_segments.append(segment_info)
                 return segment_info
             elif response.status_code == 409:
-                # Segment with same filters already exists - reuse it
+                # Segment with same filters already exists - try to reuse it
                 try:
                     error_data = response.json()
                     existing_name = error_data.get('error', {}).get('existing_cs_name', 'Unknown')
@@ -131,6 +146,43 @@ class MTUWebAutomation:
             return {'error': f"Request timeout - MoEngage API took too long to respond"}
         except Exception as e:
             return {'error': f"Error creating segment: {str(e)}"}
+    
+    def delete_segment(self, segment_id):
+        """Delete a segment using MoEngage API"""
+        try:
+            url = f"https://api-{MOENGAGE_CONFIG['data_center']}.moengage.com/v3/custom-segments/{segment_id}"
+            
+            # Auth
+            auth_string = f"{MOENGAGE_CONFIG['workspace_id']}:{MOENGAGE_CONFIG['data_api_key']}"
+            encoded_auth = base64.b64encode(auth_string.encode()).decode()
+            
+            headers = {
+                'Authorization': f'Basic {encoded_auth}',
+                'Content-Type': 'application/json',
+                'MOE-APPKEY': MOENGAGE_CONFIG['workspace_id']
+            }
+            
+            response = requests.delete(url, headers=headers, timeout=15)
+            
+            if response.status_code in [200, 204]:
+                return {'success': True}
+            else:
+                return {'error': f"Delete failed: {response.status_code} - {response.text}"}
+                
+        except Exception as e:
+            return {'error': f"Error deleting segment: {str(e)}"}
+    
+    def cleanup_segments(self, segment_ids):
+        """Clean up multiple segments after use"""
+        cleanup_results = []
+        for segment_id in segment_ids:
+            if segment_id and segment_id != 'unknown':
+                result = self.delete_segment(segment_id)
+                cleanup_results.append({
+                    'segment_id': segment_id,
+                    'result': result
+                })
+        return cleanup_results
     
     def create_all_mtu_segments(self, end_date):
         """Create all segments needed for MTU calculations"""
@@ -1085,6 +1137,8 @@ def generate_metrics():
             return redirect(url_for('comprehensive_metrics'))
         
         # Step 3: Show segments input page
+        campaign_data['segment_ids'] = segments_result.get('segment_ids', [])
+        
         return render_template('segments_input.html',
                              start_date=start_date,
                              end_date=end_date,
@@ -1145,17 +1199,49 @@ def calculate_final_metrics():
         
         user_counts_obj = SimpleNamespace(**user_counts)
         
+        # Extract segment IDs for cleanup
+        try:
+            campaign_data_dict = json.loads(campaign_data_json)
+            segment_ids = campaign_data_dict.get('segment_ids', [])
+        except:
+            segment_ids = []
+        
         return render_template('metrics_results.html',
                              start_date=start_date,
                              end_date=end_date,
                              data_source=campaign_data.get('data_source', 'API'),
                              metrics=metrics_obj,
                              campaign_data=campaign_data_obj,
-                             user_counts=user_counts_obj)
+                             user_counts=user_counts_obj,
+                             segment_ids=segment_ids)
         
     except Exception as e:
         flash(f'Error calculating final metrics: {str(e)}', 'error')
         return redirect(url_for('comprehensive_metrics'))
+
+@app.route('/cleanup-segments', methods=['POST'])
+def cleanup_segments():
+    """Clean up segments after metrics calculation"""
+    try:
+        segment_ids = request.json.get('segment_ids', [])
+        
+        if not segment_ids:
+            return jsonify({'success': False, 'message': 'No segment IDs provided'})
+        
+        # Clean up segments
+        cleanup_results = automation.cleanup_segments(segment_ids)
+        
+        successful_cleanups = sum(1 for result in cleanup_results if result['result'].get('success'))
+        total_segments = len(cleanup_results)
+        
+        return jsonify({
+            'success': True,
+            'message': f'Cleaned up {successful_cleanups}/{total_segments} segments',
+            'details': cleanup_results
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Cleanup error: {str(e)}'})
 
 @app.route('/calculate-mtu', methods=['POST'])
 def calculate_mtu():
@@ -2100,7 +2186,10 @@ def create_metrics_segments(start_date, end_date):
                 result['field_name'] = f"{country.lower()}_{channel.lower()}_unsubscribed"
                 segments.append(result)
     
-    return {'segments': segments}
+    return {
+        'segments': segments,
+        'segment_ids': [seg['id'] for seg in segments if seg.get('id') and seg['id'] != 'unknown']
+    }
 
 def calculate_comprehensive_metrics(campaign_data, user_counts):
     """Calculate all 6 metrics for both countries"""
