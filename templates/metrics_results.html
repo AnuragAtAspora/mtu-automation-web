@@ -235,22 +235,6 @@
     </div>
 </div>
 
-<!-- Cleanup Section -->
-{% if segment_ids %}
-<div class="card mt-4">
-    <div class="card-body text-center">
-        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">🧹 Clean Up Segments</h3>
-        <p style="color: var(--text-secondary); margin-bottom: 24px;">
-            The segments created for this report are no longer needed. You can clean them up to keep your MoEngage workspace organized.
-        </p>
-        <button onclick="cleanupSegments()" class="btn btn-secondary" id="cleanupBtn">
-            🗑️ Clean Up {{ segment_ids|length }} Segments
-        </button>
-        <div id="cleanupResult" style="margin-top: 16px;"></div>
-    </div>
-</div>
-{% endif %}
-
 <style>
 .metric-section {
     margin-bottom: 32px;
@@ -327,42 +311,5 @@
     }
 }
 </style>
-
-<script>
-function cleanupSegments() {
-    const segmentIds = {{ segment_ids|tojson }};
-    const btn = document.getElementById('cleanupBtn');
-    const resultDiv = document.getElementById('cleanupResult');
-    
-    // Disable button and show loading
-    btn.disabled = true;
-    btn.innerHTML = '<span class="loading"></span> Cleaning up...';
-    
-    // Call cleanup API
-    fetch('{{ url_for("cleanup_segments") }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ segment_ids: segmentIds })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            resultDiv.innerHTML = '<div class="alert alert-success">' + data.message + '</div>';
-            btn.style.display = 'none';
-        } else {
-            resultDiv.innerHTML = '<div class="alert alert-error">' + data.message + '</div>';
-            btn.disabled = false;
-            btn.innerHTML = '🗑️ Clean Up Segments';
-        }
-    })
-    .catch(error => {
-        resultDiv.innerHTML = '<div class="alert alert-error">Cleanup failed: ' + error + '</div>';
-        btn.disabled = false;
-        btn.innerHTML = '🗑️ Clean Up Segments';
-    });
-}
-</script>
 
 {% endblock %}

@@ -72,26 +72,17 @@ class MTUWebAutomation:
                 'MOE-APPKEY': MOENGAGE_CONFIG['workspace_id']
             }
             
-            # Add unique identifier to description to make filters unique
-            unique_id = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
-            unique_description = f"{description} [Report-{unique_id}]"
+            # Generate unique identifier using timestamp + random string
+            unique_id = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{random.randint(1000, 9999)}"
             
-            # Add a unique comment to filters to avoid duplicate detection
-            if 'filters' in filters and isinstance(filters['filters'], list):
-                # Add a unique user attribute filter that doesn't affect results
-                unique_filter = {
-                    "filter_type": "user_attributes",
-                    "name": "report_id",
-                    "data_type": "string", 
-                    "operator": "not_equal",
-                    "value": [f"report_{unique_id}"],
-                    "negate": False,
-                    "case_sensitive": False
-                }
-                filters['filters'].append(unique_filter)
+            # Make description unique (this affects duplicate detection)
+            unique_description = f"{description} [Generated: {unique_id}]"
+            
+            # Make segment name unique by adding microseconds
+            unique_segment_name = f"{segment_name}_{datetime.now().strftime('%f')[:3]}"
             
             payload = {
-                "name": segment_name,
+                "name": unique_segment_name,
                 "description": unique_description,
                 "included_filters": filters
             }
@@ -103,7 +94,7 @@ class MTUWebAutomation:
                 data = response.json()
                 segment_id = data['data']['id']
                 segment_info = {
-                    'name': segment_name,
+                    'name': unique_segment_name,
                     'id': segment_id,
                     'description': unique_description,
                     'url': f"https://dashboard-01.moengage.com/v4/segmentation/all-segments/custom-segments/{segment_id}",
