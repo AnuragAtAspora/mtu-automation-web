@@ -1714,8 +1714,27 @@ def create_metrics_segments(start_date, end_date):
                     {
                         "filter_type": "actions",
                         "attributes": {
-                            "filter_operator": "and",
-                            "filters": []
+                            "filter_operator": "or",
+                            "filters": [
+                                {
+                                    "filter_type": "event_attributes",
+                                    "name": "sub_event",
+                                    "data_type": "string",
+                                    "operator": "in",
+                                    "value": ["COMPLETED"],
+                                    "negate": False,
+                                    "case_sensitive": False
+                                },
+                                {
+                                    "filter_type": "event_attributes",
+                                    "name": "sub_event",
+                                    "data_type": "string",
+                                    "operator": "in",
+                                    "value": ["PAYMENT_COMPLETED"],
+                                    "negate": False,
+                                    "case_sensitive": False
+                                }
+                            ]
                         },
                         "executed": True,
                         "primary_time_range": {
@@ -1752,24 +1771,49 @@ def create_metrics_segments(start_date, end_date):
                         "case_sensitive": False
                     },
                     {
-                        "filter_type": "actions",
-                        "attributes": {
-                            "filter_operator": "and",
-                            "filters": []
-                        },
-                        "executed": True,
-                        "primary_time_range": {
-                            "type": "between",
-                            "value": f"{start_date}T00:00:00.000Z",
-                            "value1": f"{end_date}T23:59:59.999Z",
-                            "value_type": "absolute",
-                            "period_unit": "days"
-                        },
-                        "action_name": "MOE_PUSH_SENT",
-                        "execution": {
-                            "count": 1,
-                            "type": "atleast"
-                        }
+                        "filter_type": "or",
+                        "filters": [
+                            {
+                                "filter_type": "actions",
+                                "attributes": {
+                                    "filter_operator": "and",
+                                    "filters": []
+                                },
+                                "executed": True,
+                                "primary_time_range": {
+                                    "type": "between",
+                                    "value": f"{start_date}T00:00:00.000Z",
+                                    "value1": f"{end_date}T23:59:59.999Z",
+                                    "value_type": "absolute",
+                                    "period_unit": "days"
+                                },
+                                "action_name": "Notification Received Android",
+                                "execution": {
+                                    "count": 1,
+                                    "type": "atleast"
+                                }
+                            },
+                            {
+                                "filter_type": "actions",
+                                "attributes": {
+                                    "filter_operator": "and",
+                                    "filters": []
+                                },
+                                "executed": True,
+                                "primary_time_range": {
+                                    "type": "between",
+                                    "value": f"{start_date}T00:00:00.000Z",
+                                    "value1": f"{end_date}T23:59:59.999Z",
+                                    "value_type": "absolute",
+                                    "period_unit": "days"
+                                },
+                                "action_name": "Notification Received iOS",
+                                "execution": {
+                                    "count": 1,
+                                    "type": "atleast"
+                                }
+                            }
+                        ]
                     }
                 ]
             }
@@ -1832,30 +1876,74 @@ def create_metrics_segments(start_date, end_date):
                         "case_sensitive": False
                     },
                     {
-                        "filter_type": "actions",
-                        "attributes": {
-                            "filter_operator": "and",
-                            "filters": []
-                        },
-                        "executed": True,
-                        "primary_time_range": {
-                            "type": "between",
-                            "value": f"{start_date}T00:00:00.000Z",
-                            "value1": f"{end_date}T23:59:59.999Z",
-                            "value_type": "absolute",
-                            "period_unit": "days"
-                        },
-                        "action_name": "MOE_PUSH_SENT",
-                        "execution": {
-                            "count": 1,
-                            "type": "atleast"
-                        }
+                        "filter_type": "or",
+                        "filters": [
+                            {
+                                "filter_type": "actions",
+                                "attributes": {
+                                    "filter_operator": "and",
+                                    "filters": []
+                                },
+                                "executed": True,
+                                "primary_time_range": {
+                                    "type": "between",
+                                    "value": f"{start_date}T00:00:00.000Z",
+                                    "value1": f"{end_date}T23:59:59.999Z",
+                                    "value_type": "absolute",
+                                    "period_unit": "days"
+                                },
+                                "action_name": "Notification Received Android",
+                                "execution": {
+                                    "count": 1,
+                                    "type": "atleast"
+                                }
+                            },
+                            {
+                                "filter_type": "actions",
+                                "attributes": {
+                                    "filter_operator": "and",
+                                    "filters": []
+                                },
+                                "executed": True,
+                                "primary_time_range": {
+                                    "type": "between",
+                                    "value": f"{start_date}T00:00:00.000Z",
+                                    "value1": f"{end_date}T23:59:59.999Z",
+                                    "value_type": "absolute",
+                                    "period_unit": "days"
+                                },
+                                "action_name": "Notification Received iOS",
+                                "execution": {
+                                    "count": 1,
+                                    "type": "atleast"
+                                }
+                            }
+                        ]
                     },
                     {
                         "filter_type": "actions",
                         "attributes": {
-                            "filter_operator": "and",
-                            "filters": []
+                            "filter_operator": "or",
+                            "filters": [
+                                {
+                                    "filter_type": "event_attributes",
+                                    "name": "sub_event",
+                                    "data_type": "string",
+                                    "operator": "in",
+                                    "value": ["COMPLETED"],
+                                    "negate": False,
+                                    "case_sensitive": False
+                                },
+                                {
+                                    "filter_type": "event_attributes",
+                                    "name": "sub_event",
+                                    "data_type": "string",
+                                    "operator": "in",
+                                    "value": ["PAYMENT_COMPLETED"],
+                                    "negate": False,
+                                    "case_sensitive": False
+                                }
+                            ]
                         },
                         "executed": True,
                         "primary_time_range": {
@@ -1914,8 +2002,27 @@ def create_metrics_segments(start_date, end_date):
                     {
                         "filter_type": "actions",
                         "attributes": {
-                            "filter_operator": "and",
-                            "filters": []
+                            "filter_operator": "or",
+                            "filters": [
+                                {
+                                    "filter_type": "event_attributes",
+                                    "name": "sub_event",
+                                    "data_type": "string",
+                                    "operator": "in",
+                                    "value": ["COMPLETED"],
+                                    "negate": False,
+                                    "case_sensitive": False
+                                },
+                                {
+                                    "filter_type": "event_attributes",
+                                    "name": "sub_event",
+                                    "data_type": "string",
+                                    "operator": "in",
+                                    "value": ["PAYMENT_COMPLETED"],
+                                    "negate": False,
+                                    "case_sensitive": False
+                                }
+                            ]
                         },
                         "executed": True,
                         "primary_time_range": {
@@ -1965,7 +2072,7 @@ def create_metrics_segments(start_date, end_date):
                             "value_type": "absolute",
                             "period_unit": "days"
                         },
-                        "action_name": "unsubscribed to push",
+                        "action_name": "Unsubscribed to Push",
                         "execution": {
                             "count": 1,
                             "type": "atleast"
@@ -2005,7 +2112,7 @@ def create_metrics_segments(start_date, end_date):
                             "value_type": "absolute",
                             "period_unit": "days"
                         },
-                        "action_name": "email unsubscribes",
+                        "action_name": "Email Unsubscribed",
                         "execution": {
                             "count": 1,
                             "type": "atleast"
