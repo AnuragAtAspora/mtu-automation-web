@@ -5,412 +5,56 @@
 {% block content %}
 <div class="hero">
     <h1>Comprehensive Metrics Dashboard</h1>
-    <p>Complete analytics overview for UK and UAE markets with sample data</p>
+    <p>Generate complete analytics overview for UK and UAE markets</p>
 </div>
 
 <!-- Date Range Selector -->
-<div class="card mb-4">
+<div class="card">
     <div class="card-header">
-        <h2 class="card-title">📅 Reporting Period</h2>
+        <h2 class="card-title">📅 Select Reporting Period</h2>
     </div>
     <div class="card-body">
-        <form id="dateRangeForm" class="grid grid-2">
+        <form method="POST" action="{{ url_for('generate_metrics') }}" class="grid grid-2">
             <div class="form-group">
                 <label class="form-label" for="start_date">Start Date</label>
-                <input type="date" id="start_date" name="start_date" class="form-control" value="2026-02-01">
+                <input type="date" id="start_date" name="start_date" class="form-control" value="2026-02-01" required>
+                <div class="form-text">Select the start date for your reporting period</div>
             </div>
             <div class="form-group">
                 <label class="form-label" for="end_date">End Date</label>
-                <input type="date" id="end_date" name="end_date" class="form-control" value="2026-02-28">
+                <input type="date" id="end_date" name="end_date" class="form-control" value="2026-02-28" required>
+                <div class="form-text">Select the end date for your reporting period</div>
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <button type="submit" class="btn btn-primary btn-large">
+                    📊 Generate Metrics Report
+                </button>
             </div>
         </form>
-        <button onclick="refreshMetrics()" class="btn btn-primary">
-            🔄 Refresh Metrics
-        </button>
     </div>
 </div>
 
-<!-- Metrics Grid -->
-<div class="grid grid-2">
-    <!-- UK Metrics -->
-    <div class="card">
-        <div class="card-header">
-            <h2 class="card-title">🇬🇧 UK Metrics</h2>
-        </div>
-        <div class="card-body">
-            
-            <!-- 1. % receiving comms (total userbase) -->
-            <div class="metric-section">
-                <h3 class="metric-title">📊 % Receiving Communications (Total Userbase)</h3>
-                <div class="metric-grid">
-                    <div class="metric-item">
-                        <div class="metric-label">Push Notifications</div>
-                        <div class="metric-value" id="uk-pn-total-reach">68.5%</div>
-                        <div class="metric-detail">34,250 / 50,000 users</div>
-                    </div>
-                    <div class="metric-item">
-                        <div class="metric-label">Email</div>
-                        <div class="metric-value" id="uk-email-total-reach">72.3%</div>
-                        <div class="metric-detail">36,150 / 50,000 users</div>
-                    </div>
-                </div>
+<!-- Information Card -->
+<div class="card mt-4">
+    <div class="card-body">
+        <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 16px;">How it works:</h3>
+        <div class="grid grid-3">
+            <div class="text-center">
+                <div style="width: 48px; height: 48px; background: var(--primary-color); border-radius: 12px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px;">1</div>
+                <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Select Dates</h4>
+                <p style="color: var(--text-secondary); font-size: 14px;">Choose your reporting period</p>
             </div>
-
-            <!-- 2. Unsubscribe rate -->
-            <div class="metric-section">
-                <h3 class="metric-title">📉 Unsubscribe Rate</h3>
-                <div class="metric-grid">
-                    <div class="metric-item">
-                        <div class="metric-label">Push Notifications</div>
-                        <div class="metric-value warning" id="uk-pn-unsub">2.1%</div>
-                        <div class="metric-detail">719 / 34,250 recipients</div>
-                    </div>
-                    <div class="metric-item">
-                        <div class="metric-label">Email</div>
-                        <div class="metric-value warning" id="uk-email-unsub">1.8%</div>
-                        <div class="metric-detail">651 / 36,150 recipients</div>
-                    </div>
-                </div>
+            <div class="text-center">
+                <div style="width: 48px; height: 48px; background: var(--primary-color); border-radius: 12px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px;">2</div>
+                <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Enter Segment Counts</h4>
+                <p style="color: var(--text-secondary); font-size: 14px;">Get counts from MoEngage dashboard</p>
             </div>
-
-            <!-- 3. % receiving comms (active userbase) -->
-            <div class="metric-section">
-                <h3 class="metric-title">🎯 % Receiving Communications (Active Userbase)</h3>
-                <div class="metric-grid">
-                    <div class="metric-item">
-                        <div class="metric-label">Push Notifications</div>
-                        <div class="metric-value success" id="uk-pn-active-reach">89.2%</div>
-                        <div class="metric-detail">17,840 / 20,000 active users</div>
-                    </div>
-                    <div class="metric-item">
-                        <div class="metric-label">Email</div>
-                        <div class="metric-value success" id="uk-email-active-reach">91.5%</div>
-                        <div class="metric-detail">18,300 / 20,000 active users</div>
-                    </div>
-                </div>
+            <div class="text-center">
+                <div style="width: 48px; height: 48px; background: var(--primary-color); border-radius: 12px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px;">3</div>
+                <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">View Results</h4>
+                <p style="color: var(--text-secondary); font-size: 14px;">See comprehensive metrics dashboard</p>
             </div>
-
-            <!-- 4. No. of comms received per user -->
-            <div class="metric-section">
-                <h3 class="metric-title">📬 Communications Per User</h3>
-                
-                <h4 class="metric-subtitle">Transactional</h4>
-                <div class="metric-grid">
-                    <div class="metric-item">
-                        <div class="metric-label">Push Notifications</div>
-                        <div class="metric-value" id="uk-pn-trans-per-user">3.2</div>
-                        <div class="metric-detail">64,000 / 20,000 transacted users</div>
-                    </div>
-                    <div class="metric-item">
-                        <div class="metric-label">Email</div>
-                        <div class="metric-value" id="uk-email-trans-per-user">2.8</div>
-                        <div class="metric-detail">56,000 / 20,000 transacted users</div>
-                    </div>
-                </div>
-
-                <h4 class="metric-subtitle">Promotional</h4>
-                <div class="metric-grid">
-                    <div class="metric-item">
-                        <div class="metric-label">Push Notifications</div>
-                        <div class="metric-value" id="uk-pn-promo-per-user">1.6</div>
-                        <div class="metric-detail">80,000 / 50,000 total users</div>
-                    </div>
-                    <div class="metric-item">
-                        <div class="metric-label">Email</div>
-                        <div class="metric-value" id="uk-email-promo-per-user">1.4</div>
-                        <div class="metric-detail">70,000 / 50,000 total users</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 5. PN CTR -->
-            <div class="metric-section">
-                <h3 class="metric-title">📱 Push Notification CTR</h3>
-                <div class="metric-item">
-                    <div class="metric-value success" id="uk-pn-ctr">4.7%</div>
-                    <div class="metric-detail">6,768 clicks / 144,000 delivered</div>
-                </div>
-            </div>
-
-            <!-- 6. Email Open Rate -->
-            <div class="metric-section">
-                <h3 class="metric-title">📧 Email Open Rate</h3>
-                <div class="metric-item">
-                    <div class="metric-value success" id="uk-email-open">22.3%</div>
-                    <div class="metric-detail">28,098 opens / 126,000 delivered</div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-    <!-- UAE Metrics -->
-    <div class="card">
-        <div class="card-header">
-            <h2 class="card-title">🇦🇪 UAE Metrics</h2>
-        </div>
-        <div class="card-body">
-            
-            <!-- 1. % receiving comms (total userbase) -->
-            <div class="metric-section">
-                <h3 class="metric-title">📊 % Receiving Communications (Total Userbase)</h3>
-                <div class="metric-grid">
-                    <div class="metric-item">
-                        <div class="metric-label">Push Notifications</div>
-                        <div class="metric-value" id="uae-pn-total-reach">71.2%</div>
-                        <div class="metric-detail">21,360 / 30,000 users</div>
-                    </div>
-                    <div class="metric-item">
-                        <div class="metric-label">Email</div>
-                        <div class="metric-value" id="uae-email-total-reach">74.8%</div>
-                        <div class="metric-detail">22,440 / 30,000 users</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 2. Unsubscribe rate -->
-            <div class="metric-section">
-                <h3 class="metric-title">📉 Unsubscribe Rate</h3>
-                <div class="metric-grid">
-                    <div class="metric-item">
-                        <div class="metric-label">Push Notifications</div>
-                        <div class="metric-value warning" id="uae-pn-unsub">1.9%</div>
-                        <div class="metric-detail">406 / 21,360 recipients</div>
-                    </div>
-                    <div class="metric-item">
-                        <div class="metric-label">Email</div>
-                        <div class="metric-value warning" id="uae-email-unsub">1.6%</div>
-                        <div class="metric-detail">359 / 22,440 recipients</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 3. % receiving comms (active userbase) -->
-            <div class="metric-section">
-                <h3 class="metric-title">🎯 % Receiving Communications (Active Userbase)</h3>
-                <div class="metric-grid">
-                    <div class="metric-item">
-                        <div class="metric-label">Push Notifications</div>
-                        <div class="metric-value success" id="uae-pn-active-reach">92.1%</div>
-                        <div class="metric-detail">11,052 / 12,000 active users</div>
-                    </div>
-                    <div class="metric-item">
-                        <div class="metric-label">Email</div>
-                        <div class="metric-value success" id="uae-email-active-reach">93.8%</div>
-                        <div class="metric-detail">11,256 / 12,000 active users</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 4. No. of comms received per user -->
-            <div class="metric-section">
-                <h3 class="metric-title">📬 Communications Per User</h3>
-                
-                <h4 class="metric-subtitle">Transactional</h4>
-                <div class="metric-grid">
-                    <div class="metric-item">
-                        <div class="metric-label">Push Notifications</div>
-                        <div class="metric-value" id="uae-pn-trans-per-user">3.5</div>
-                        <div class="metric-detail">42,000 / 12,000 transacted users</div>
-                    </div>
-                    <div class="metric-item">
-                        <div class="metric-label">Email</div>
-                        <div class="metric-value" id="uae-email-trans-per-user">3.1</div>
-                        <div class="metric-detail">37,200 / 12,000 transacted users</div>
-                    </div>
-                </div>
-
-                <h4 class="metric-subtitle">Promotional</h4>
-                <div class="metric-grid">
-                    <div class="metric-item">
-                        <div class="metric-label">Push Notifications</div>
-                        <div class="metric-value" id="uae-pn-promo-per-user">1.8</div>
-                        <div class="metric-detail">54,000 / 30,000 total users</div>
-                    </div>
-                    <div class="metric-item">
-                        <div class="metric-label">Email</div>
-                        <div class="metric-value" id="uae-email-promo-per-user">1.5</div>
-                        <div class="metric-detail">45,000 / 30,000 total users</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 5. PN CTR -->
-            <div class="metric-section">
-                <h3 class="metric-title">📱 Push Notification CTR</h3>
-                <div class="metric-item">
-                    <div class="metric-value success" id="uae-pn-ctr">5.2%</div>
-                    <div class="metric-detail">4,992 clicks / 96,000 delivered</div>
-                </div>
-            </div>
-
-            <!-- 6. Email Open Rate -->
-            <div class="metric-section">
-                <h3 class="metric-title">📧 Email Open Rate</h3>
-                <div class="metric-item">
-                    <div class="metric-value success" id="uae-email-open">24.1%</div>
-                    <div class="metric-detail">19,825 opens / 82,200 delivered</div>
-                </div>
-            </div>
-
         </div>
     </div>
 </div>
-
-
-
-<style>
-.metric-section {
-    margin-bottom: 32px;
-    padding-bottom: 24px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.metric-section:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-}
-
-.metric-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 16px;
-}
-
-.metric-subtitle {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    margin: 16px 0 12px 0;
-}
-
-.metric-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    margin-bottom: 16px;
-}
-
-.metric-item {
-    background: var(--gray-50);
-    padding: 16px;
-    border-radius: 12px;
-    text-align: center;
-}
-
-.metric-label {
-    font-size: 14px;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
-}
-
-.metric-value {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: 4px;
-}
-
-.metric-value.success {
-    color: var(--success-color);
-}
-
-.metric-value.warning {
-    color: var(--warning-color);
-}
-
-.metric-detail {
-    font-size: 12px;
-    color: var(--text-light);
-}
-
-@media (max-width: 768px) {
-    .metric-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .metric-value {
-        font-size: 20px;
-    }
-}
-</style>
-
-<script>
-function refreshMetrics() {
-    // Simulate refreshing metrics with new random data
-    const startDate = document.getElementById('start_date').value;
-    const endDate = document.getElementById('end_date').value;
-    
-    // Show loading state
-    const button = event.target;
-    const originalText = button.innerHTML;
-    button.innerHTML = '<span class="loading"></span> Refreshing...';
-    button.disabled = true;
-    
-    // Simulate API call delay
-    setTimeout(() => {
-        // Generate new random sample data
-        updateMetricsWithRandomData();
-        
-        // Reset button
-        button.innerHTML = originalText;
-        button.disabled = false;
-        
-        // Show success message
-        showNotification('Metrics updated successfully!', 'success');
-    }, 2000);
-}
-
-function updateMetricsWithRandomData() {
-    // UK Metrics
-    document.getElementById('uk-pn-total-reach').textContent = (65 + Math.random() * 10).toFixed(1) + '%';
-    document.getElementById('uk-email-total-reach').textContent = (70 + Math.random() * 8).toFixed(1) + '%';
-    document.getElementById('uk-pn-unsub').textContent = (1.5 + Math.random() * 1).toFixed(1) + '%';
-    document.getElementById('uk-email-unsub').textContent = (1.2 + Math.random() * 1).toFixed(1) + '%';
-    document.getElementById('uk-pn-active-reach').textContent = (85 + Math.random() * 10).toFixed(1) + '%';
-    document.getElementById('uk-email-active-reach').textContent = (88 + Math.random() * 8).toFixed(1) + '%';
-    document.getElementById('uk-pn-trans-per-user').textContent = (2.8 + Math.random() * 0.8).toFixed(1);
-    document.getElementById('uk-email-trans-per-user').textContent = (2.5 + Math.random() * 0.6).toFixed(1);
-    document.getElementById('uk-pn-promo-per-user').textContent = (1.2 + Math.random() * 0.8).toFixed(1);
-    document.getElementById('uk-email-promo-per-user').textContent = (1.1 + Math.random() * 0.6).toFixed(1);
-    document.getElementById('uk-pn-ctr').textContent = (4 + Math.random() * 2).toFixed(1) + '%';
-    document.getElementById('uk-email-open').textContent = (20 + Math.random() * 8).toFixed(1) + '%';
-    
-    // UAE Metrics
-    document.getElementById('uae-pn-total-reach').textContent = (68 + Math.random() * 8).toFixed(1) + '%';
-    document.getElementById('uae-email-total-reach').textContent = (72 + Math.random() * 6).toFixed(1) + '%';
-    document.getElementById('uae-pn-unsub').textContent = (1.3 + Math.random() * 1).toFixed(1) + '%';
-    document.getElementById('uae-email-unsub').textContent = (1.0 + Math.random() * 1).toFixed(1) + '%';
-    document.getElementById('uae-pn-active-reach').textContent = (88 + Math.random() * 8).toFixed(1) + '%';
-    document.getElementById('uae-email-active-reach').textContent = (90 + Math.random() * 6).toFixed(1) + '%';
-    document.getElementById('uae-pn-trans-per-user').textContent = (3.2 + Math.random() * 0.6).toFixed(1);
-    document.getElementById('uae-email-trans-per-user').textContent = (2.8 + Math.random() * 0.6).toFixed(1);
-    document.getElementById('uae-pn-promo-per-user').textContent = (1.5 + Math.random() * 0.6).toFixed(1);
-    document.getElementById('uae-email-promo-per-user').textContent = (1.2 + Math.random() * 0.6).toFixed(1);
-    document.getElementById('uae-pn-ctr').textContent = (4.5 + Math.random() * 2).toFixed(1) + '%';
-    document.getElementById('uae-email-open').textContent = (22 + Math.random() * 6).toFixed(1) + '%';
-}
-
-function showNotification(message, type) {
-    const notification = document.createElement('div');
-    notification.className = `alert alert-${type}`;
-    notification.textContent = message;
-    notification.style.position = 'fixed';
-    notification.style.top = '20px';
-    notification.style.right = '20px';
-    notification.style.zIndex = '1000';
-    notification.style.minWidth = '300px';
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
-}
-
-// Auto-refresh every 5 minutes (optional)
-// setInterval(refreshMetrics, 300000);
-</script>
-
 {% endblock %}

@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Enter Segment Counts{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>Enter Segment Counts</h1>
+    <p>Get the counts from MoEngage dashboard and enter them below</p>
+</div>
+
+<!-- Period Info -->
+<div class="alert alert-info">
+    <strong>Reporting Period:</strong> {{ start_date }} to {{ end_date }}
+</div>
+
+<!-- Segments Created -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h2 class="card-title">📊 Segments Created</h2>
+    </div>
+    <div class="card-body">
+        <p style="margin-bottom: 24px;">The following segments have been created in MoEngage. Click the links to view each segment and get the user count.</p>
+        
+        <div class="grid grid-2">
+            <!-- UK Segments -->
+            <div>
+                <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">🇬🇧 UK Segments</h3>
+                {% for segment in segments if 'GB' in segment.name %}
+                <div style="background: var(--gray-50); padding: 16px; border-radius: 12px; margin-bottom: 12px;">
+                    <div style="font-weight: 600; margin-bottom: 8px;">{{ segment.display_name }}</div>
+                    <a href="{{ segment.url }}" target="_blank" class="btn btn-secondary" style="font-size: 14px; padding: 8px 16px;">
+                        Open in MoEngage
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- UAE Segments -->
+            <div>
+                <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">🇦🇪 UAE Segments</h3>
+                {% for segment in segments if 'AE' in segment.name %}
+                <div style="background: var(--gray-50); padding: 16px; border-radius: 12px; margin-bottom: 12px;">
+                    <div style="font-weight: 600; margin-bottom: 8px;">{{ segment.display_name }}</div>
+                    <a href="{{ segment.url }}" target="_blank" class="btn btn-secondary" style="font-size: 14px; padding: 8px 16px;">
+                        Open in MoEngage
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Manual Input Form -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">📝 Enter Segment Counts</h2>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('calculate_final_metrics') }}">
+            <!-- Hidden fields to pass data -->
+            <input type="hidden" name="start_date" value="{{ start_date }}">
+            <input type="hidden" name="end_date" value="{{ end_date }}">
+            <input type="hidden" name="campaign_data" value="{{ campaign_data_json }}">
+            
+            <div class="grid grid-2">
+                <!-- UK Counts -->
+                <div>
+                    <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 20px;">🇬🇧 UK User Counts</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="uk_total_users">Total Users</label>
+                        <input type="number" id="uk_total_users" name="uk_total_users" class="form-control" required min="0">
+                        <div class="form-text">All users in UK</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="uk_active_users">Active Users (60 days)</label>
+                        <input type="number" id="uk_active_users" name="uk_active_users" class="form-control" required min="0">
+                        <div class="form-text">Users who transacted in last 60 days</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="uk_push_received">Users who received Push</label>
+                        <input type="number" id="uk_push_received" name="uk_push_received" class="form-control" required min="0">
+                        <div class="form-text">Users who received push in selected period</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="uk_email_received">Users who received Email</label>
+                        <input type="number" id="uk_email_received" name="uk_email_received" class="form-control" required min="0">
+                        <div class="form-text">Users who received email in selected period</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="uk_push_received_active">Active Users who received Push</label>
+                        <input type="number" id="uk_push_received_active" name="uk_push_received_active" class="form-control" required min="0">
+                        <div class="form-text">Active users who received push</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="uk_email_received_active">Active Users who received Email</label>
+                        <input type="number" id="uk_email_received_active" name="uk_email_received_active" class="form-control" required min="0">
+                        <div class="form-text">Active users who received email</div>
+                    </div>
+                </div>
+                
+                <!-- UAE Counts -->
+                <div>
+                    <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 20px;">🇦🇪 UAE User Counts</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="uae_total_users">Total Users</label>
+                        <input type="number" id="uae_total_users" name="uae_total_users" class="form-control" required min="0">
+                        <div class="form-text">All users in UAE</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="uae_active_users">Active Users (60 days)</label>
+                        <input type="number" id="uae_active_users" name="uae_active_users" class="form-control" required min="0">
+                        <div class="form-text">Users who transacted in last 60 days</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="uae_push_received">Users who received Push</label>
+                        <input type="number" id="uae_push_received" name="uae_push_received" class="form-control" required min="0">
+                        <div class="form-text">Users who received push in selected period</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="uae_email_received">Users who received Email</label>
+                        <input type="number" id="uae_email_received" name="uae_email_received" class="form-control" required min="0">
+                        <div class="form-text">Users who received email in selected period</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="uae_push_received_active">Active Users who received Push</label>
+                        <input type="number" id="uae_push_received_active" name="uae_push_received_active" class="form-control" required min="0">
+                        <div class="form-text">Active users who received push</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="uae_email_received_active">Active Users who received Email</label>
+                        <input type="number" id="uae_email_received_active" name="uae_email_received_active" class="form-control" required min="0">
+                        <div class="form-text">Active users who received email</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 32px;">
+                <button type="submit" class="btn btn-primary btn-large">
+                    📊 Calculate Final Metrics
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+
+{% block title %}Metrics Results{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>Comprehensive Metrics Results</h1>
+    <p>{{ start_date }} to {{ end_date }} | Data Source: {{ data_source }}</p>
+</div>
+
+<!-- Metrics Grid -->
+<div class="grid grid-2">
+    <!-- UK Metrics -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">🇬🇧 UK Metrics</h2>
+        </div>
+        <div class="card-body">
+            
+            <!-- 1. % receiving comms (total userbase) -->
+            <div class="metric-section">
+                <h3 class="metric-title">📊 % Receiving Communications (Total Userbase)</h3>
+                <div class="metric-grid">
+                    <div class="metric-item">
+                        <div class="metric-label">Push Notifications</div>
+                        <div class="metric-value">{{ "%.1f"|format(metrics.uk.pn_total_reach) }}%</div>
+                        <div class="metric-detail">{{ "{:,}".format(user_counts.uk_push_received) }} / {{ "{:,}".format(user_counts.uk_total_users) }} users</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Email</div>
+                        <div class="metric-value">{{ "%.1f"|format(metrics.uk.email_total_reach) }}%</div>
+                        <div class="metric-detail">{{ "{:,}".format(user_counts.uk_email_received) }} / {{ "{:,}".format(user_counts.uk_total_users) }} users</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Unsubscribe rate -->
+            <div class="metric-section">
+                <h3 class="metric-title">📉 Unsubscribe Rate</h3>
+                <div class="metric-grid">
+                    <div class="metric-item">
+                        <div class="metric-label">Push Notifications</div>
+                        <div class="metric-value warning">{{ "%.1f"|format(metrics.uk.pn_unsub_rate) }}%</div>
+                        <div class="metric-detail">{{ "{:,}".format(campaign_data.uk.pn_unsubscribes) }} / {{ "{:,}".format(user_counts.uk_push_received) }} recipients</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Email</div>
+                        <div class="metric-value warning">{{ "%.1f"|format(metrics.uk.email_unsub_rate) }}%</div>
+                        <div class="metric-detail">{{ "{:,}".format(campaign_data.uk.email_unsubscribes) }} / {{ "{:,}".format(user_counts.uk_email_received) }} recipients</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. % receiving comms (active userbase) -->
+            <div class="metric-section">
+                <h3 class="metric-title">🎯 % Receiving Communications (Active Userbase)</h3>
+                <div class="metric-grid">
+                    <div class="metric-item">
+                        <div class="metric-label">Push Notifications</div>
+                        <div class="metric-value success">{{ "%.1f"|format(metrics.uk.pn_active_reach) }}%</div>
+                        <div class="metric-detail">{{ "{:,}".format(user_counts.uk_push_received_active) }} / {{ "{:,}".format(user_counts.uk_active_users) }} active users</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Email</div>
+                        <div class="metric-value success">{{ "%.1f"|format(metrics.uk.email_active_reach) }}%</div>
+                        <div class="metric-detail">{{ "{:,}".format(user_counts.uk_email_received_active) }} / {{ "{:,}".format(user_counts.uk_active_users) }} active users</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. No. of comms received per user -->
+            <div class="metric-section">
+                <h3 class="metric-title">📬 Communications Per User</h3>
+                
+                <h4 class="metric-subtitle">Transactional</h4>
+                <div class="metric-grid">
+                    <div class="metric-item">
+                        <div class="metric-label">Push Notifications</div>
+                        <div class="metric-value">{{ "%.1f"|format(metrics.uk.pn_trans_per_user) }}</div>
+                        <div class="metric-detail">{{ "{:,}".format(campaign_data.uk.tx_pn_sent) }} / {{ "{:,}".format(user_counts.uk_active_users) }} transacted users</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Email</div>
+                        <div class="metric-value">{{ "%.1f"|format(metrics.uk.email_trans_per_user) }}</div>
+                        <div class="metric-detail">{{ "{:,}".format(campaign_data.uk.tx_email_sent) }} / {{ "{:,}".format(user_counts.uk_active_users) }} transacted users</div>
+                    </div>
+                </div>
+
+                <h4 class="metric-subtitle">Promotional</h4>
+                <div class="metric-grid">
+                    <div class="metric-item">
+                        <div class="metric-label">Push Notifications</div>
+                        <div class="metric-value">{{ "%.1f"|format(metrics.uk.pn_promo_per_user) }}</div>
+                        <div class="metric-detail">{{ "{:,}".format(campaign_data.uk.pr_pn_sent) }} / {{ "{:,}".format(user_counts.uk_total_users) }} total users</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Email</div>
+                        <div class="metric-value">{{ "%.1f"|format(metrics.uk.email_promo_per_user) }}</div>
+                        <div class="metric-detail">{{ "{:,}".format(campaign_data.uk.pr_email_sent) }} / {{ "{:,}".format(user_counts.uk_total_users) }} total users</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. PN CTR -->
+            <div class="metric-section">
+                <h3 class="metric-title">📱 Push Notification CTR</h3>
+                <div class="metric-item">
+                    <div class="metric-value success">{{ "%.1f"|format(metrics.uk.pn_ctr) }}%</div>
+                    <div class="metric-detail">{{ "{:,}".format(campaign_data.uk.pn_clicks) }} clicks / {{ "{:,}".format(campaign_data.uk.pn_delivered) }} delivered</div>
+                </div>
+            </div>
+
+            <!-- 6. Email Open Rate -->
+            <div class="metric-section">
+                <h3 class="metric-title">📧 Email Open Rate</h3>
+                <div class="metric-item">
+                    <div class="metric-value success">{{ "%.1f"|format(metrics.uk.email_open_rate) }}%</div>
+                    <div class="metric-detail">{{ "{:,}".format(campaign_data.uk.email_opens) }} opens / {{ "{:,}".format(campaign_data.uk.email_delivered) }} delivered</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- UAE Metrics -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">🇦🇪 UAE Metrics</h2>
+        </div>
+        <div class="card-body">
+            
+            <!-- 1. % receiving comms (total userbase) -->
+            <div class="metric-section">
+                <h3 class="metric-title">📊 % Receiving Communications (Total Userbase)</h3>
+                <div class="metric-grid">
+                    <div class="metric-item">
+                        <div class="metric-label">Push Notifications</div>
+                        <div class="metric-value">{{ "%.1f"|format(metrics.uae.pn_total_reach) }}%</div>
+                        <div class="metric-detail">{{ "{:,}".format(user_counts.uae_push_received) }} / {{ "{:,}".format(user_counts.uae_total_users) }} users</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Email</div>
+                        <div class="metric-value">{{ "%.1f"|format(metrics.uae.email_total_reach) }}%</div>
+                        <div class="metric-detail">{{ "{:,}".format(user_counts.uae_email_received) }} / {{ "{:,}".format(user_counts.uae_total_users) }} users</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Unsubscribe rate -->
+            <div class="metric-section">
+                <h3 class="metric-title">📉 Unsubscribe Rate</h3>
+                <div class="metric-grid">
+                    <div class="metric-item">
+                        <div class="metric-label">Push Notifications</div>
+                        <div class="metric-value warning">{{ "%.1f"|format(metrics.uae.pn_unsub_rate) }}%</div>
+                        <div class="metric-detail">{{ "{:,}".format(campaign_data.uae.pn_unsubscribes) }} / {{ "{:,}".format(user_counts.uae_push_received) }} recipients</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Email</div>
+                        <div class="metric-value warning">{{ "%.1f"|format(metrics.uae.email_unsub_rate) }}%</div>
+                        <div class="metric-detail">{{ "{:,}".format(campaign_data.uae.email_unsubscribes) }} / {{ "{:,}".format(user_counts.uae_email_received) }} recipients</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. % receiving comms (active userbase) -->
+            <div class="metric-section">
+                <h3 class="metric-title">🎯 % Receiving Communications (Active Userbase)</h3>
+                <div class="metric-grid">
+                    <div class="metric-item">
+                        <div class="metric-label">Push Notifications</div>
+                        <div class="metric-value success">{{ "%.1f"|format(metrics.uae.pn_active_reach) }}%</div>
+                        <div class="metric-detail">{{ "{:,}".format(user_counts.uae_push_received_active) }} / {{ "{:,}".format(user_counts.uae_active_users) }} active users</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Email</div>
+                        <div class="metric-value success">{{ "%.1f"|format(metrics.uae.email_active_reach) }}%</div>
+                        <div class="metric-detail">{{ "{:,}".format(user_counts.uae_email_received_active) }} / {{ "{:,}".format(user_counts.uae_active_users) }} active users</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. No. of comms received per user -->
+            <div class="metric-section">
+                <h3 class="metric-title">📬 Communications Per User</h3>
+                
+                <h4 class="metric-subtitle">Transactional</h4>
+                <div class="metric-grid">
+                    <div class="metric-item">
+                        <div class="metric-label">Push Notifications</div>
+                        <div class="metric-value">{{ "%.1f"|format(metrics.uae.pn_trans_per_user) }}</div>
+                        <div class="metric-detail">{{ "{:,}".format(campaign_data.uae.tx_pn_sent) }} / {{ "{:,}".format(user_counts.uae_active_users) }} transacted users</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Email</div>
+                        <div class="metric-value">{{ "%.1f"|format(metrics.uae.email_trans_per_user) }}</div>
+                        <div class="metric-detail">{{ "{:,}".format(campaign_data.uae.tx_email_sent) }} / {{ "{:,}".format(user_counts.uae_active_users) }} transacted users</div>
+                    </div>
+                </div>
+
+                <h4 class="metric-subtitle">Promotional</h4>
+                <div class="metric-grid">
+                    <div class="metric-item">
+                        <div class="metric-label">Push Notifications</div>
+                        <div class="metric-value">{{ "%.1f"|format(metrics.uae.pn_promo_per_user) }}</div>
+                        <div class="metric-detail">{{ "{:,}".format(campaign_data.uae.pr_pn_sent) }} / {{ "{:,}".format(user_counts.uae_total_users) }} total users</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-label">Email</div>
+                        <div class="metric-value">{{ "%.1f"|format(metrics.uae.email_promo_per_user) }}</div>
+                        <div class="metric-detail">{{ "{:,}".format(campaign_data.uae.pr_email_sent) }} / {{ "{:,}".format(user_counts.uae_total_users) }} total users</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. PN CTR -->
+            <div class="metric-section">
+                <h3 class="metric-title">📱 Push Notification CTR</h3>
+                <div class="metric-item">
+                    <div class="metric-value success">{{ "%.1f"|format(metrics.uae.pn_ctr) }}%</div>
+                    <div class="metric-detail">{{ "{:,}".format(campaign_data.uae.pn_clicks) }} clicks / {{ "{:,}".format(campaign_data.uae.pn_delivered) }} delivered</div>
+                </div>
+            </div>
+
+            <!-- 6. Email Open Rate -->
+            <div class="metric-section">
+                <h3 class="metric-title">📧 Email Open Rate</h3>
+                <div class="metric-item">
+                    <div class="metric-value success">{{ "%.1f"|format(metrics.uae.email_open_rate) }}%</div>
+                    <div class="metric-detail">{{ "{:,}".format(campaign_data.uae.email_opens) }} opens / {{ "{:,}".format(campaign_data.uae.email_delivered) }} delivered</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+.metric-section {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.metric-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.metric-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+}
+
+.metric-subtitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 16px 0 12px 0;
+}
+
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.metric-item {
+    background: var(--gray-50);
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.metric-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.metric-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 4px;
+}
+
+.metric-value.success {
+    color: var(--success-color);
+}
+
+.metric-value.warning {
+    color: var(--warning-color);
+}
+
+.metric-detail {
+    font-size: 12px;
+    color: var(--text-light);
+}
+
+@media (max-width: 768px) {
+    .metric-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .metric-value {
+        font-size: 20px;
+    }
+}
+</style>
+{% endblock %}
