@@ -41,12 +41,12 @@
                     <div class="metric-item">
                         <div class="metric-label">Push Notifications</div>
                         <div class="metric-value warning">{{ "%.1f"|format(metrics.uk.pn_unsub_rate) }}%</div>
-                        <div class="metric-detail">{{ "{:,}".format(campaign_data.uk.pn_unsubscribes) }} / {{ "{:,}".format(user_counts.uk_push_received) }} recipients</div>
+                        <div class="metric-detail">{{ "{:,}".format(user_counts.uk_push_unsubscribed) }} / {{ "{:,}".format(user_counts.uk_push_received) }} recipients</div>
                     </div>
                     <div class="metric-item">
                         <div class="metric-label">Email</div>
                         <div class="metric-value warning">{{ "%.1f"|format(metrics.uk.email_unsub_rate) }}%</div>
-                        <div class="metric-detail">{{ "{:,}".format(campaign_data.uk.email_unsubscribes) }} / {{ "{:,}".format(user_counts.uk_email_received) }} recipients</div>
+                        <div class="metric-detail">{{ "{:,}".format(user_counts.uk_email_unsubscribed) }} / {{ "{:,}".format(user_counts.uk_email_received) }} recipients</div>
                     </div>
                 </div>
             </div>
@@ -153,12 +153,12 @@
                     <div class="metric-item">
                         <div class="metric-label">Push Notifications</div>
                         <div class="metric-value warning">{{ "%.1f"|format(metrics.uae.pn_unsub_rate) }}%</div>
-                        <div class="metric-detail">{{ "{:,}".format(campaign_data.uae.pn_unsubscribes) }} / {{ "{:,}".format(user_counts.uae_push_received) }} recipients</div>
+                        <div class="metric-detail">{{ "{:,}".format(user_counts.uae_push_unsubscribed) }} / {{ "{:,}".format(user_counts.uae_push_received) }} recipients</div>
                     </div>
                     <div class="metric-item">
                         <div class="metric-label">Email</div>
                         <div class="metric-value warning">{{ "%.1f"|format(metrics.uae.email_unsub_rate) }}%</div>
-                        <div class="metric-detail">{{ "{:,}".format(campaign_data.uae.email_unsubscribes) }} / {{ "{:,}".format(user_counts.uae_email_received) }} recipients</div>
+                        <div class="metric-detail">{{ "{:,}".format(user_counts.uae_email_unsubscribed) }} / {{ "{:,}".format(user_counts.uae_email_received) }} recipients</div>
                     </div>
                 </div>
             </div>

@@ -1115,12 +1115,16 @@ def calculate_final_metrics():
             'uk_email_received': int(request.form.get('uk_email_received', 0)),
             'uk_push_received_active': int(request.form.get('uk_push_received_active', 0)),
             'uk_email_received_active': int(request.form.get('uk_email_received_active', 0)),
+            'uk_push_unsubscribed': int(request.form.get('uk_push_unsubscribed', 0)),
+            'uk_email_unsubscribed': int(request.form.get('uk_email_unsubscribed', 0)),
             'uae_total_users': int(request.form.get('uae_total_users', 0)),
             'uae_active_users': int(request.form.get('uae_active_users', 0)),
             'uae_push_received': int(request.form.get('uae_push_received', 0)),
             'uae_email_received': int(request.form.get('uae_email_received', 0)),
             'uae_push_received_active': int(request.form.get('uae_push_received_active', 0)),
             'uae_email_received_active': int(request.form.get('uae_email_received_active', 0)),
+            'uae_push_unsubscribed': int(request.form.get('uae_push_unsubscribed', 0)),
+            'uae_email_unsubscribed': int(request.form.get('uae_email_unsubscribed', 0)),
         }
         
         # Calculate metrics
@@ -1614,7 +1618,7 @@ def create_metrics_segments(start_date, end_date):
             result['display_name'] = f"{country_name} Total Users"
             segments.append(result)
         
-        # 2. Active users (60 days)
+        # 2. Active users (60 days) - with ORDER sub-events
         segment_name = f"Metrics_{country_code}_Active_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         active_end = datetime.now()
         active_start = active_end - timedelta(days=60)
@@ -1632,24 +1636,69 @@ def create_metrics_segments(start_date, end_date):
                     "case_sensitive": False
                 },
                 {
-                    "filter_type": "actions",
-                    "attributes": {
-                        "filter_operator": "and",
-                        "filters": []
-                    },
-                    "executed": True,
-                    "primary_time_range": {
-                        "type": "between",
-                        "value": active_start.strftime('%Y-%m-%dT00:00:00.000Z'),
-                        "value1": active_end.strftime('%Y-%m-%dT23:59:59.999Z'),
-                        "value_type": "absolute",
-                        "period_unit": "days"
-                    },
-                    "action_name": "ORDER",
-                    "execution": {
-                        "count": 1,
-                        "type": "atleast"
-                    }
+                    "filter_operator": "or",
+                    "filters": [
+                        {
+                            "filter_type": "actions",
+                            "attributes": {
+                                "filter_operator": "and",
+                                "filters": [
+                                    {
+                                        "filter_type": "event_attributes",
+                                        "name": "sub_event",
+                                        "data_type": "string",
+                                        "operator": "in",
+                                        "value": ["COMPLETED"],
+                                        "negate": False,
+                                        "case_sensitive": False
+                                    }
+                                ]
+                            },
+                            "executed": True,
+                            "primary_time_range": {
+                                "type": "between",
+                                "value": active_start.strftime('%Y-%m-%dT00:00:00.000Z'),
+                                "value1": active_end.strftime('%Y-%m-%dT23:59:59.999Z'),
+                                "value_type": "absolute",
+                                "period_unit": "days"
+                            },
+                            "action_name": "ORDER",
+                            "execution": {
+                                "count": 1,
+                                "type": "atleast"
+                            }
+                        },
+                        {
+                            "filter_type": "actions",
+                            "attributes": {
+                                "filter_operator": "and",
+                                "filters": [
+                                    {
+                                        "filter_type": "event_attributes",
+                                        "name": "sub_event",
+                                        "data_type": "string",
+                                        "operator": "in",
+                                        "value": ["PAYMENT_COMPLETED"],
+                                        "negate": False,
+                                        "case_sensitive": False
+                                    }
+                                ]
+                            },
+                            "executed": True,
+                            "primary_time_range": {
+                                "type": "between",
+                                "value": active_start.strftime('%Y-%m-%dT00:00:00.000Z'),
+                                "value1": active_end.strftime('%Y-%m-%dT23:59:59.999Z'),
+                                "value_type": "absolute",
+                                "period_unit": "days"
+                            },
+                            "action_name": "ORDER",
+                            "execution": {
+                                "count": 1,
+                                "type": "atleast"
+                            }
+                        }
+                    ]
                 }
             ]
         }
@@ -1659,44 +1708,107 @@ def create_metrics_segments(start_date, end_date):
             result['display_name'] = f"{country_name} Active Users (60 days)"
             segments.append(result)
         
-        # 3. Users who received push
-        for channel, event_name in [('Push', 'MOE_PUSH_SENT'), ('Email', 'MOE_EMAIL_SENT')]:
+        # 3. Users who received push/email - using notification received events
+        for channel, event_names in [('Push', ['notification received Android', 'notification received iOS']), ('Email', ['MOE_EMAIL_SENT'])]:
             segment_name = f"Metrics_{country_code}_{channel}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             
-            filters = {
-                "filter_operator": "and",
-                "filters": [
-                    {
-                        "filter_type": "user_attributes",
-                        "name": "country",
-                        "data_type": "string",
-                        "operator": "in",
-                        "value": [country_code],
-                        "negate": False,
-                        "case_sensitive": False
-                    },
-                    {
-                        "filter_type": "actions",
-                        "attributes": {
-                            "filter_operator": "and",
-                            "filters": []
+            if channel == 'Push':
+                # For push - use OR condition for Android OR iOS notification received
+                filters = {
+                    "filter_operator": "and",
+                    "filters": [
+                        {
+                            "filter_type": "user_attributes",
+                            "name": "country",
+                            "data_type": "string",
+                            "operator": "in",
+                            "value": [country_code],
+                            "negate": False,
+                            "case_sensitive": False
                         },
-                        "executed": True,
-                        "primary_time_range": {
-                            "type": "between",
-                            "value": f"{start_date}T00:00:00.000Z",
-                            "value1": f"{end_date}T23:59:59.999Z",
-                            "value_type": "absolute",
-                            "period_unit": "days"
-                        },
-                        "action_name": event_name,
-                        "execution": {
-                            "count": 1,
-                            "type": "atleast"
+                        {
+                            "filter_operator": "or",
+                            "filters": [
+                                {
+                                    "filter_type": "actions",
+                                    "attributes": {
+                                        "filter_operator": "and",
+                                        "filters": []
+                                    },
+                                    "executed": True,
+                                    "primary_time_range": {
+                                        "type": "between",
+                                        "value": f"{start_date}T00:00:00.000Z",
+                                        "value1": f"{end_date}T23:59:59.999Z",
+                                        "value_type": "absolute",
+                                        "period_unit": "days"
+                                    },
+                                    "action_name": "notification received Android",
+                                    "execution": {
+                                        "count": 1,
+                                        "type": "atleast"
+                                    }
+                                },
+                                {
+                                    "filter_type": "actions",
+                                    "attributes": {
+                                        "filter_operator": "and",
+                                        "filters": []
+                                    },
+                                    "executed": True,
+                                    "primary_time_range": {
+                                        "type": "between",
+                                        "value": f"{start_date}T00:00:00.000Z",
+                                        "value1": f"{end_date}T23:59:59.999Z",
+                                        "value_type": "absolute",
+                                        "period_unit": "days"
+                                    },
+                                    "action_name": "notification received iOS",
+                                    "execution": {
+                                        "count": 1,
+                                        "type": "atleast"
+                                    }
+                                }
+                            ]
                         }
-                    }
-                ]
-            }
+                    ]
+                }
+            else:
+                # For email - use MOE_EMAIL_SENT
+                filters = {
+                    "filter_operator": "and",
+                    "filters": [
+                        {
+                            "filter_type": "user_attributes",
+                            "name": "country",
+                            "data_type": "string",
+                            "operator": "in",
+                            "value": [country_code],
+                            "negate": False,
+                            "case_sensitive": False
+                        },
+                        {
+                            "filter_type": "actions",
+                            "attributes": {
+                                "filter_operator": "and",
+                                "filters": []
+                            },
+                            "executed": True,
+                            "primary_time_range": {
+                                "type": "between",
+                                "value": f"{start_date}T00:00:00.000Z",
+                                "value1": f"{end_date}T23:59:59.999Z",
+                                "value_type": "absolute",
+                                "period_unit": "days"
+                            },
+                            "action_name": "MOE_EMAIL_SENT",
+                            "execution": {
+                                "count": 1,
+                                "type": "atleast"
+                            }
+                        }
+                    ]
+                }
             
             result = automation.create_segment(segment_name, f"{country_name} users who received {channel.lower()}", filters)
             if 'error' not in result:
@@ -1706,6 +1818,243 @@ def create_metrics_segments(start_date, end_date):
             # 4. Active users who received communications
             segment_name = f"Metrics_{country_code}_{channel}Active_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             
+            if channel == 'Push':
+                # For push - combine notification received (Android OR iOS) AND active user conditions
+                filters = {
+                    "filter_operator": "and",
+                    "filters": [
+                        {
+                            "filter_type": "user_attributes",
+                            "name": "country",
+                            "data_type": "string",
+                            "operator": "in",
+                            "value": [country_code],
+                            "negate": False,
+                            "case_sensitive": False
+                        },
+                        {
+                            "filter_operator": "or",
+                            "filters": [
+                                {
+                                    "filter_type": "actions",
+                                    "attributes": {
+                                        "filter_operator": "and",
+                                        "filters": []
+                                    },
+                                    "executed": True,
+                                    "primary_time_range": {
+                                        "type": "between",
+                                        "value": f"{start_date}T00:00:00.000Z",
+                                        "value1": f"{end_date}T23:59:59.999Z",
+                                        "value_type": "absolute",
+                                        "period_unit": "days"
+                                    },
+                                    "action_name": "notification received Android",
+                                    "execution": {
+                                        "count": 1,
+                                        "type": "atleast"
+                                    }
+                                },
+                                {
+                                    "filter_type": "actions",
+                                    "attributes": {
+                                        "filter_operator": "and",
+                                        "filters": []
+                                    },
+                                    "executed": True,
+                                    "primary_time_range": {
+                                        "type": "between",
+                                        "value": f"{start_date}T00:00:00.000Z",
+                                        "value1": f"{end_date}T23:59:59.999Z",
+                                        "value_type": "absolute",
+                                        "period_unit": "days"
+                                    },
+                                    "action_name": "notification received iOS",
+                                    "execution": {
+                                        "count": 1,
+                                        "type": "atleast"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "filter_operator": "or",
+                            "filters": [
+                                {
+                                    "filter_type": "actions",
+                                    "attributes": {
+                                        "filter_operator": "and",
+                                        "filters": [
+                                            {
+                                                "filter_type": "event_attributes",
+                                                "name": "sub_event",
+                                                "data_type": "string",
+                                                "operator": "in",
+                                                "value": ["COMPLETED"],
+                                                "negate": False,
+                                                "case_sensitive": False
+                                            }
+                                        ]
+                                    },
+                                    "executed": True,
+                                    "primary_time_range": {
+                                        "type": "between",
+                                        "value": active_start.strftime('%Y-%m-%dT00:00:00.000Z'),
+                                        "value1": active_end.strftime('%Y-%m-%dT23:59:59.999Z'),
+                                        "value_type": "absolute",
+                                        "period_unit": "days"
+                                    },
+                                    "action_name": "ORDER",
+                                    "execution": {
+                                        "count": 1,
+                                        "type": "atleast"
+                                    }
+                                },
+                                {
+                                    "filter_type": "actions",
+                                    "attributes": {
+                                        "filter_operator": "and",
+                                        "filters": [
+                                            {
+                                                "filter_type": "event_attributes",
+                                                "name": "sub_event",
+                                                "data_type": "string",
+                                                "operator": "in",
+                                                "value": ["PAYMENT_COMPLETED"],
+                                                "negate": False,
+                                                "case_sensitive": False
+                                            }
+                                        ]
+                                    },
+                                    "executed": True,
+                                    "primary_time_range": {
+                                        "type": "between",
+                                        "value": active_start.strftime('%Y-%m-%dT00:00:00.000Z'),
+                                        "value1": active_end.strftime('%Y-%m-%dT23:59:59.999Z'),
+                                        "value_type": "absolute",
+                                        "period_unit": "days"
+                                    },
+                                    "action_name": "ORDER",
+                                    "execution": {
+                                        "count": 1,
+                                        "type": "atleast"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            else:
+                # For email - combine MOE_EMAIL_SENT AND active user conditions
+                filters = {
+                    "filter_operator": "and",
+                    "filters": [
+                        {
+                            "filter_type": "user_attributes",
+                            "name": "country",
+                            "data_type": "string",
+                            "operator": "in",
+                            "value": [country_code],
+                            "negate": False,
+                            "case_sensitive": False
+                        },
+                        {
+                            "filter_type": "actions",
+                            "attributes": {
+                                "filter_operator": "and",
+                                "filters": []
+                            },
+                            "executed": True,
+                            "primary_time_range": {
+                                "type": "between",
+                                "value": f"{start_date}T00:00:00.000Z",
+                                "value1": f"{end_date}T23:59:59.999Z",
+                                "value_type": "absolute",
+                                "period_unit": "days"
+                            },
+                            "action_name": "MOE_EMAIL_SENT",
+                            "execution": {
+                                "count": 1,
+                                "type": "atleast"
+                            }
+                        },
+                        {
+                            "filter_operator": "or",
+                            "filters": [
+                                {
+                                    "filter_type": "actions",
+                                    "attributes": {
+                                        "filter_operator": "and",
+                                        "filters": [
+                                            {
+                                                "filter_type": "event_attributes",
+                                                "name": "sub_event",
+                                                "data_type": "string",
+                                                "operator": "in",
+                                                "value": ["COMPLETED"],
+                                                "negate": False,
+                                                "case_sensitive": False
+                                            }
+                                        ]
+                                    },
+                                    "executed": True,
+                                    "primary_time_range": {
+                                        "type": "between",
+                                        "value": active_start.strftime('%Y-%m-%dT00:00:00.000Z'),
+                                        "value1": active_end.strftime('%Y-%m-%dT23:59:59.999Z'),
+                                        "value_type": "absolute",
+                                        "period_unit": "days"
+                                    },
+                                    "action_name": "ORDER",
+                                    "execution": {
+                                        "count": 1,
+                                        "type": "atleast"
+                                    }
+                                },
+                                {
+                                    "filter_type": "actions",
+                                    "attributes": {
+                                        "filter_operator": "and",
+                                        "filters": [
+                                            {
+                                                "filter_type": "event_attributes",
+                                                "name": "sub_event",
+                                                "data_type": "string",
+                                                "operator": "in",
+                                                "value": ["PAYMENT_COMPLETED"],
+                                                "negate": False,
+                                                "case_sensitive": False
+                                            }
+                                        ]
+                                    },
+                                    "executed": True,
+                                    "primary_time_range": {
+                                        "type": "between",
+                                        "value": active_start.strftime('%Y-%m-%dT00:00:00.000Z'),
+                                        "value1": active_end.strftime('%Y-%m-%dT23:59:59.999Z'),
+                                        "value_type": "absolute",
+                                        "period_unit": "days"
+                                    },
+                                    "action_name": "ORDER",
+                                    "execution": {
+                                        "count": 1,
+                                        "type": "atleast"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            
+            result = automation.create_segment(segment_name, f"{country_name} active users who received {channel.lower()}", filters)
+            if 'error' not in result:
+                result['display_name'] = f"{country_name} Active Users who received {channel}"
+                segments.append(result)
+        
+        # 5. Users who unsubscribed from push/email
+        for channel, event_names in [('Push', ['unsubscribed to push']), ('Email', ['email unsubscribes'])]:
+            segment_name = f"Metrics_{country_code}_{channel}Unsub_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            
             filters = {
                 "filter_operator": "and",
                 "filters": [
@@ -1732,27 +2081,7 @@ def create_metrics_segments(start_date, end_date):
                             "value_type": "absolute",
                             "period_unit": "days"
                         },
-                        "action_name": event_name,
-                        "execution": {
-                            "count": 1,
-                            "type": "atleast"
-                        }
-                    },
-                    {
-                        "filter_type": "actions",
-                        "attributes": {
-                            "filter_operator": "and",
-                            "filters": []
-                        },
-                        "executed": True,
-                        "primary_time_range": {
-                            "type": "between",
-                            "value": active_start.strftime('%Y-%m-%dT00:00:00.000Z'),
-                            "value1": active_end.strftime('%Y-%m-%dT23:59:59.999Z'),
-                            "value_type": "absolute",
-                            "period_unit": "days"
-                        },
-                        "action_name": "ORDER",
+                        "action_name": event_names[0],
                         "execution": {
                             "count": 1,
                             "type": "atleast"
@@ -1761,9 +2090,9 @@ def create_metrics_segments(start_date, end_date):
                 ]
             }
             
-            result = automation.create_segment(segment_name, f"{country_name} active users who received {channel.lower()}", filters)
+            result = automation.create_segment(segment_name, f"{country_name} users who unsubscribed from {channel.lower()}", filters)
             if 'error' not in result:
-                result['display_name'] = f"{country_name} Active Users who received {channel}"
+                result['display_name'] = f"{country_name} Users who unsubscribed from {channel}"
                 segments.append(result)
     
     return {'segments': segments}
@@ -1791,9 +2120,9 @@ def calculate_comprehensive_metrics(campaign_data, user_counts):
         metrics[country]['pn_total_reach'] = (push_received / total_users * 100) if total_users > 0 else 0
         metrics[country]['email_total_reach'] = (email_received / total_users * 100) if total_users > 0 else 0
         
-        # 2. Unsubscribe rate
-        metrics[country]['pn_unsub_rate'] = (country_data['pn_unsubscribes'] / push_received * 100) if push_received > 0 else 0
-        metrics[country]['email_unsub_rate'] = (country_data['email_unsubscribes'] / email_received * 100) if email_received > 0 else 0
+        # 2. Unsubscribe rate - using actual segment counts
+        metrics[country]['pn_unsub_rate'] = (user_counts[f'{country}_push_unsubscribed'] / push_received * 100) if push_received > 0 else 0
+        metrics[country]['email_unsub_rate'] = (user_counts[f'{country}_email_unsubscribed'] / email_received * 100) if email_received > 0 else 0
         
         # 3. % receiving comms (active userbase)
         metrics[country]['pn_active_reach'] = (push_received_active / active_users * 100) if active_users > 0 else 0
