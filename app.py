@@ -1054,6 +1054,11 @@ def calculate_mtu_form():
     """Show MTU calculation form"""
     return render_template('calculate_mtu.html')
 
+@app.route('/comprehensive-metrics')
+def comprehensive_metrics():
+    """Show comprehensive metrics dashboard with sample data"""
+    return render_template('comprehensive_metrics.html')
+
 @app.route('/calculate-mtu', methods=['POST'])
 def calculate_mtu():
     """Calculate MTU from segment counts"""
