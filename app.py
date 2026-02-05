@@ -1597,7 +1597,7 @@ def create_metrics_segments(start_date, end_date):
     for country_name, country_code in countries.items():
         
         # 1. Total users
-        segment_name = f"Metrics_{country_code}_Total_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        segment_name = f"UK_All_Users_{datetime.now().strftime('%m%d_%H%M')}" if country_code == 'GB' else f"UAE_All_Users_{datetime.now().strftime('%m%d_%H%M')}"
         filters = {
             "filter_operator": "and",
             "filters": [
@@ -1613,13 +1613,14 @@ def create_metrics_segments(start_date, end_date):
             ]
         }
         
-        result = automation.create_segment(segment_name, f"Total {country_name} users for metrics", filters)
+        result = automation.create_segment(segment_name, f"All {country_name} users", filters)
         if 'error' not in result:
-            result['display_name'] = f"{country_name} Total Users"
+            result['display_name'] = f"{country_name} - All Users"
+            result['field_name'] = f"{country.lower()}_total_users"
             segments.append(result)
         
         # 2. Active users (60 days) - with ORDER sub-events
-        segment_name = f"Metrics_{country_code}_Active_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        segment_name = f"UK_Active_Users_60d_{datetime.now().strftime('%m%d_%H%M')}" if country_code == 'GB' else f"UAE_Active_Users_60d_{datetime.now().strftime('%m%d_%H%M')}"
         active_end = datetime.now()
         active_start = active_end - timedelta(days=60)
         
@@ -1705,12 +1706,13 @@ def create_metrics_segments(start_date, end_date):
         
         result = automation.create_segment(segment_name, f"{country_name} active users (60d)", filters)
         if 'error' not in result:
-            result['display_name'] = f"{country_name} Active Users (60 days)"
+            result['display_name'] = f"{country_name} - Active Users (60 days)"
+            result['field_name'] = f"{country.lower()}_active_users"
             segments.append(result)
         
         # 3. Users who received push/email - using notification received events
         for channel, event_names in [('Push', ['notification received Android', 'notification received iOS']), ('Email', ['MOE_EMAIL_SENT'])]:
-            segment_name = f"Metrics_{country_code}_{channel}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            segment_name = f"UK_Received_{channel}_{datetime.now().strftime('%m%d_%H%M')}" if country_code == 'GB' else f"UAE_Received_{channel}_{datetime.now().strftime('%m%d_%H%M')}"
             
             if channel == 'Push':
                 # For push - use OR condition for Android OR iOS notification received
@@ -1812,11 +1814,12 @@ def create_metrics_segments(start_date, end_date):
             
             result = automation.create_segment(segment_name, f"{country_name} users who received {channel.lower()}", filters)
             if 'error' not in result:
-                result['display_name'] = f"{country_name} Users who received {channel}"
+                result['display_name'] = f"{country_name} - Received {channel}"
+                result['field_name'] = f"{country.lower()}_{channel.lower()}_received"
                 segments.append(result)
             
             # 4. Active users who received communications
-            segment_name = f"Metrics_{country_code}_{channel}Active_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            segment_name = f"UK_Active_Received_{channel}_{datetime.now().strftime('%m%d_%H%M')}" if country_code == 'GB' else f"UAE_Active_Received_{channel}_{datetime.now().strftime('%m%d_%H%M')}"
             
             if channel == 'Push':
                 # For push - combine notification received (Android OR iOS) AND active user conditions
@@ -2048,12 +2051,13 @@ def create_metrics_segments(start_date, end_date):
             
             result = automation.create_segment(segment_name, f"{country_name} active users who received {channel.lower()}", filters)
             if 'error' not in result:
-                result['display_name'] = f"{country_name} Active Users who received {channel}"
+                result['display_name'] = f"{country_name} - Active Users Received {channel}"
+                result['field_name'] = f"{country.lower()}_{channel.lower()}_received_active"
                 segments.append(result)
         
         # 5. Users who unsubscribed from push/email
         for channel, event_names in [('Push', ['unsubscribed to push']), ('Email', ['email unsubscribes'])]:
-            segment_name = f"Metrics_{country_code}_{channel}Unsub_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            segment_name = f"UK_Unsubscribed_{channel}_{datetime.now().strftime('%m%d_%H%M')}" if country_code == 'GB' else f"UAE_Unsubscribed_{channel}_{datetime.now().strftime('%m%d_%H%M')}"
             
             filters = {
                 "filter_operator": "and",
@@ -2092,7 +2096,8 @@ def create_metrics_segments(start_date, end_date):
             
             result = automation.create_segment(segment_name, f"{country_name} users who unsubscribed from {channel.lower()}", filters)
             if 'error' not in result:
-                result['display_name'] = f"{country_name} Users who unsubscribed from {channel}"
+                result['display_name'] = f"{country_name} - Unsubscribed {channel}"
+                result['field_name'] = f"{country.lower()}_{channel.lower()}_unsubscribed"
                 segments.append(result)
     
     return {'segments': segments}
