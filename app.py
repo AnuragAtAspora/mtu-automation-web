@@ -1754,10 +1754,10 @@ def create_metrics_segments(start_date, end_date):
             }
         },
         {
-            'name': 'UK_Received_Push',
-            'display_name': 'UK - Received Push',
-            'field_name': 'uk_push_received',
-            'description': 'UK users who received push',
+            'name': 'UK_Received_Push_Android',
+            'display_name': 'UK - Received Push (Android)',
+            'field_name': 'uk_push_received_android',
+            'description': 'UK users who received Android push',
             'filters': {
                 "filter_operator": "and",
                 "filters": [
@@ -1771,49 +1771,64 @@ def create_metrics_segments(start_date, end_date):
                         "case_sensitive": False
                     },
                     {
-                        "filter_type": "or",
-                        "filters": [
-                            {
-                                "filter_type": "actions",
-                                "attributes": {
-                                    "filter_operator": "and",
-                                    "filters": []
-                                },
-                                "executed": True,
-                                "primary_time_range": {
-                                    "type": "between",
-                                    "value": f"{start_date}T00:00:00.000Z",
-                                    "value1": f"{end_date}T23:59:59.999Z",
-                                    "value_type": "absolute",
-                                    "period_unit": "days"
-                                },
-                                "action_name": "Notification Received Android",
-                                "execution": {
-                                    "count": 1,
-                                    "type": "atleast"
-                                }
-                            },
-                            {
-                                "filter_type": "actions",
-                                "attributes": {
-                                    "filter_operator": "and",
-                                    "filters": []
-                                },
-                                "executed": True,
-                                "primary_time_range": {
-                                    "type": "between",
-                                    "value": f"{start_date}T00:00:00.000Z",
-                                    "value1": f"{end_date}T23:59:59.999Z",
-                                    "value_type": "absolute",
-                                    "period_unit": "days"
-                                },
-                                "action_name": "Notification Received iOS",
-                                "execution": {
-                                    "count": 1,
-                                    "type": "atleast"
-                                }
-                            }
-                        ]
+                        "filter_type": "actions",
+                        "attributes": {
+                            "filter_operator": "and",
+                            "filters": []
+                        },
+                        "executed": True,
+                        "primary_time_range": {
+                            "type": "between",
+                            "value": f"{start_date}T00:00:00.000Z",
+                            "value1": f"{end_date}T23:59:59.999Z",
+                            "value_type": "absolute",
+                            "period_unit": "days"
+                        },
+                        "action_name": "Notification Received Android",
+                        "execution": {
+                            "count": 1,
+                            "type": "atleast"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            'name': 'UK_Received_Push_iOS',
+            'display_name': 'UK - Received Push (iOS)',
+            'field_name': 'uk_push_received_ios',
+            'description': 'UK users who received iOS push',
+            'filters': {
+                "filter_operator": "and",
+                "filters": [
+                    {
+                        "filter_type": "user_attributes",
+                        "name": "country",
+                        "data_type": "string",
+                        "operator": "in",
+                        "value": ["GB"],
+                        "negate": False,
+                        "case_sensitive": False
+                    },
+                    {
+                        "filter_type": "actions",
+                        "attributes": {
+                            "filter_operator": "and",
+                            "filters": []
+                        },
+                        "executed": True,
+                        "primary_time_range": {
+                            "type": "between",
+                            "value": f"{start_date}T00:00:00.000Z",
+                            "value1": f"{end_date}T23:59:59.999Z",
+                            "value_type": "absolute",
+                            "period_unit": "days"
+                        },
+                        "action_name": "Notification Received iOS",
+                        "execution": {
+                            "count": 1,
+                            "type": "atleast"
+                        }
                     }
                 ]
             }
@@ -1859,10 +1874,10 @@ def create_metrics_segments(start_date, end_date):
             }
         },
         {
-            'name': 'UK_Active_Received_Push',
-            'display_name': 'UK - Active Users Received Push',
-            'field_name': 'uk_push_received_active',
-            'description': 'UK active users who received push',
+            'name': 'UK_Active_Received_Push_Android',
+            'display_name': 'UK - Active Users Received Push (Android)',
+            'field_name': 'uk_push_received_active_android',
+            'description': 'UK active users who received Android push',
             'filters': {
                 "filter_operator": "and",
                 "filters": [
@@ -1876,49 +1891,103 @@ def create_metrics_segments(start_date, end_date):
                         "case_sensitive": False
                     },
                     {
-                        "filter_type": "or",
-                        "filters": [
-                            {
-                                "filter_type": "actions",
-                                "attributes": {
-                                    "filter_operator": "and",
-                                    "filters": []
+                        "filter_type": "actions",
+                        "attributes": {
+                            "filter_operator": "and",
+                            "filters": []
+                        },
+                        "executed": True,
+                        "primary_time_range": {
+                            "type": "between",
+                            "value": f"{start_date}T00:00:00.000Z",
+                            "value1": f"{end_date}T23:59:59.999Z",
+                            "value_type": "absolute",
+                            "period_unit": "days"
+                        },
+                        "action_name": "Notification Received Android",
+                        "execution": {
+                            "count": 1,
+                            "type": "atleast"
+                        }
+                    },
+                    {
+                        "filter_type": "actions",
+                        "attributes": {
+                            "filter_operator": "or",
+                            "filters": [
+                                {
+                                    "filter_type": "event_attributes",
+                                    "name": "sub_event",
+                                    "data_type": "string",
+                                    "operator": "in",
+                                    "value": ["COMPLETED"],
+                                    "negate": False,
+                                    "case_sensitive": False
                                 },
-                                "executed": True,
-                                "primary_time_range": {
-                                    "type": "between",
-                                    "value": f"{start_date}T00:00:00.000Z",
-                                    "value1": f"{end_date}T23:59:59.999Z",
-                                    "value_type": "absolute",
-                                    "period_unit": "days"
-                                },
-                                "action_name": "Notification Received Android",
-                                "execution": {
-                                    "count": 1,
-                                    "type": "atleast"
+                                {
+                                    "filter_type": "event_attributes",
+                                    "name": "sub_event",
+                                    "data_type": "string",
+                                    "operator": "in",
+                                    "value": ["PAYMENT_COMPLETED"],
+                                    "negate": False,
+                                    "case_sensitive": False
                                 }
-                            },
-                            {
-                                "filter_type": "actions",
-                                "attributes": {
-                                    "filter_operator": "and",
-                                    "filters": []
-                                },
-                                "executed": True,
-                                "primary_time_range": {
-                                    "type": "between",
-                                    "value": f"{start_date}T00:00:00.000Z",
-                                    "value1": f"{end_date}T23:59:59.999Z",
-                                    "value_type": "absolute",
-                                    "period_unit": "days"
-                                },
-                                "action_name": "Notification Received iOS",
-                                "execution": {
-                                    "count": 1,
-                                    "type": "atleast"
-                                }
-                            }
-                        ]
+                            ]
+                        },
+                        "executed": True,
+                        "primary_time_range": {
+                            "type": "between",
+                            "value": (datetime.now() - timedelta(days=60)).strftime('%Y-%m-%dT00:00:00.000Z'),
+                            "value1": datetime.now().strftime('%Y-%m-%dT23:59:59.999Z'),
+                            "value_type": "absolute",
+                            "period_unit": "days"
+                        },
+                        "action_name": "ORDER",
+                        "execution": {
+                            "count": 1,
+                            "type": "atleast"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            'name': 'UK_Active_Received_Push_iOS',
+            'display_name': 'UK - Active Users Received Push (iOS)',
+            'field_name': 'uk_push_received_active_ios',
+            'description': 'UK active users who received iOS push',
+            'filters': {
+                "filter_operator": "and",
+                "filters": [
+                    {
+                        "filter_type": "user_attributes",
+                        "name": "country",
+                        "data_type": "string",
+                        "operator": "in",
+                        "value": ["GB"],
+                        "negate": False,
+                        "case_sensitive": False
+                    },
+                    {
+                        "filter_type": "actions",
+                        "attributes": {
+                            "filter_operator": "and",
+                            "filters": []
+                        },
+                        "executed": True,
+                        "primary_time_range": {
+                            "type": "between",
+                            "value": f"{start_date}T00:00:00.000Z",
+                            "value1": f"{end_date}T23:59:59.999Z",
+                            "value_type": "absolute",
+                            "period_unit": "days"
+                        },
+                        "action_name": "Notification Received iOS",
+                        "execution": {
+                            "count": 1,
+                            "type": "atleast"
+                        }
                     },
                     {
                         "filter_type": "actions",
