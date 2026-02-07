@@ -8,6 +8,46 @@
     <p>{{ start_date }} to {{ end_date }} | Data Source: {{ data_source }}</p>
 </div>
 
+<!-- Export Campaign Data Section -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h3 class="card-title">📥 Export Campaign Data</h3>
+    </div>
+    <div class="card-body">
+        <p style="margin-bottom: 20px; color: var(--text-secondary);">Download campaign data by category for further analysis</p>
+        
+        <div class="export-grid">
+            <!-- UK Categories -->
+            <div class="export-section">
+                <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">🇬🇧 UK Campaigns</h4>
+                <div class="export-buttons">
+                    <a href="{{ url_for('export_campaign_csv', category='uk_promotional_push') }}" class="btn btn-sm btn-outline">UK - Promotional - Push</a>
+                    <a href="{{ url_for('export_campaign_csv', category='uk_promotional_email') }}" class="btn btn-sm btn-outline">UK - Promotional - Email</a>
+                    <a href="{{ url_for('export_campaign_csv', category='uk_transactional_push') }}" class="btn btn-sm btn-outline">UK - Transactional - Push</a>
+                    <a href="{{ url_for('export_campaign_csv', category='uk_transactional_email') }}" class="btn btn-sm btn-outline">UK - Transactional - Email</a>
+                </div>
+            </div>
+            
+            <!-- UAE Categories -->
+            <div class="export-section">
+                <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">🇦🇪 UAE Campaigns</h4>
+                <div class="export-buttons">
+                    <a href="{{ url_for('export_campaign_csv', category='uae_promotional_push') }}" class="btn btn-sm btn-outline">UAE - Promotional - Push</a>
+                    <a href="{{ url_for('export_campaign_csv', category='uae_promotional_email') }}" class="btn btn-sm btn-outline">UAE - Promotional - Email</a>
+                    <a href="{{ url_for('export_campaign_csv', category='uae_transactional_push') }}" class="btn btn-sm btn-outline">UAE - Transactional - Push</a>
+                    <a href="{{ url_for('export_campaign_csv', category='uae_transactional_email') }}" class="btn btn-sm btn-outline">UAE - Transactional - Email</a>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px; text-align: center;">
+            <a href="{{ url_for('export_all_campaigns_csv') }}" class="btn btn-primary">
+                📊 Export All Campaigns (Combined CSV)
+            </a>
+        </div>
+    </div>
+</div>
+
 <!-- Metrics Grid -->
 <div class="grid grid-2">
     <!-- UK Metrics -->
@@ -301,6 +341,44 @@
     color: var(--text-light);
 }
 
+.export-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+.export-section {
+    padding: 16px;
+    background: var(--gray-50);
+    border-radius: 12px;
+}
+
+.export-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+.btn-outline {
+    background: white;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.btn-outline:hover {
+    background: var(--gray-100);
+    border-color: var(--primary-color);
+}
+
+.mb-4 {
+    margin-bottom: 24px;
+}
+
 @media (max-width: 768px) {
     .metric-grid {
         grid-template-columns: 1fr;
@@ -308,6 +386,10 @@
     
     .metric-value {
         font-size: 20px;
+    }
+    
+    .export-grid {
+        grid-template-columns: 1fr;
     }
 }
 </style>

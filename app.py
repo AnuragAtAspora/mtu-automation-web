@@ -1210,6 +1210,94 @@ def calculate_final_metrics():
         flash(f'Error calculating final metrics: {str(e)}', 'error')
         return redirect(url_for('comprehensive_metrics'))
 
+
+@app.route('/export-campaign-csv/<category>')
+def export_campaign_csv(category):
+    """Export campaign data for a specific category to CSV"""
+    try:
+        # Get campaign data from session
+        campaign_categories = session.get('campaign_categories', {})
+        
+        if not campaign_categories:
+            flash('No campaign data available. Please generate metrics first.', 'error')
+            return redirect(url_for('comprehensive_metrics'))
+        
+        # Get campaigns for the requested category
+        campaigns = campaign_categories.get(category, [])
+        
+        if not campaigns:
+            flash(f'No campaigns found for category: {category}', 'warning')
+            return redirect(url_for('comprehensive_metrics'))
+        
+        # Create CSV in memory
+        output = io.StringIO()
+        writer = csv.DictWriter(output, fieldnames=[
+            'campaign_id', 'campaign_name', 'channel', 'category',
+            'sent', 'delivered', 'open', 'click', 'unsubscribe'
+        ])
+        
+        writer.writeheader()
+        writer.writerows(campaigns)
+        
+        # Create response
+        output.seek(0)
+        return send_file(
+            io.BytesIO(output.getvalue().encode('utf-8')),
+            mimetype='text/csv',
+            as_attachment=True,
+            download_name=f'{category}_campaigns.csv'
+        )
+        
+    except Exception as e:
+        flash(f'Error exporting CSV: {str(e)}', 'error')
+        return redirect(url_for('comprehensive_metrics'))
+
+@app.route('/export-all-campaigns-csv')
+def export_all_campaigns_csv():
+    """Export all campaign data to a single CSV"""
+    try:
+        # Get campaign data from session
+        campaign_categories = session.get('campaign_categories', {})
+        
+        if not campaign_categories:
+            flash('No campaign data available. Please generate metrics first.', 'error')
+            return redirect(url_for('comprehensive_metrics'))
+        
+        # Combine all campaigns
+        all_campaigns = []
+        for category, campaigns in campaign_categories.items():
+            for campaign in campaigns:
+                campaign_copy = campaign.copy()
+                campaign_copy['category_group'] = category
+                all_campaigns.append(campaign_copy)
+        
+        if not all_campaigns:
+            flash('No campaigns found', 'warning')
+            return redirect(url_for('comprehensive_metrics'))
+        
+        # Create CSV in memory
+        output = io.StringIO()
+        writer = csv.DictWriter(output, fieldnames=[
+            'campaign_id', 'campaign_name', 'channel', 'category', 'category_group',
+            'sent', 'delivered', 'open', 'click', 'unsubscribe'
+        ])
+        
+        writer.writeheader()
+        writer.writerows(all_campaigns)
+        
+        # Create response
+        output.seek(0)
+        return send_file(
+            io.BytesIO(output.getvalue().encode('utf-8')),
+            mimetype='text/csv',
+            as_attachment=True,
+            download_name='all_campaigns.csv'
+        )
+        
+    except Exception as e:
+        flash(f'Error exporting CSV: {str(e)}', 'error')
+        return redirect(url_for('comprehensive_metrics'))
+
 @app.route('/cleanup-segments', methods=['POST'])
 def cleanup_segments():
     """Clean up segments after metrics calculation"""
