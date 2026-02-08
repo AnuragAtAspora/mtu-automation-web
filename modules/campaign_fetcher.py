@@ -46,16 +46,14 @@ class CampaignFetcher:
             Dict with campaign stats or error
         """
         try:
-            # Campaign Search API payload format - simplified
+            # Campaign Search API payload - use filters instead of campaign_fields
             payload = {
                 "request_id": f"search_{int(time.time())}",
                 "page": (offset // limit) + 1,
                 "limit": limit,
-                "campaign_fields": {
-                    "created_time": {
-                        "from": f"{start_date}T00:00:00.000Z",
-                        "to": f"{end_date}T23:59:59.999Z"
-                    }
+                "filters": {
+                    "from_date": start_date,
+                    "to_date": end_date
                 }
             }
             
