@@ -3,7 +3,7 @@ MoEngage Metrics Web Application
 Clean, modular implementation
 """
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import os
 import csv
@@ -15,6 +15,7 @@ import config
 
 app = Flask(__name__)
 app.secret_key = config.SECRET_KEY
+app.permanent_session_lifetime = timedelta(hours=2)  # Session lasts 2 hours
 
 # Make datetime available in templates
 @app.context_processor
@@ -47,6 +48,9 @@ def create_segments():
     - Shows segment links for user to get counts
     """
     try:
+        # Make session permanent (lasts 2 hours)
+        session.permanent = True
+        
         start_date = request.form.get('start_date')
         end_date = request.form.get('end_date')
         
@@ -119,6 +123,9 @@ def calculate_metrics():
     - Shows results
     """
     try:
+        # Make session permanent (lasts 2 hours)
+        session.permanent = True
+        
         # Get dates from session
         start_date = session.get('start_date')
         end_date = session.get('end_date')
