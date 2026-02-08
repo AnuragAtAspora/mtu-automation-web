@@ -1,20 +1,21 @@
-# MoEngage Configuration
-MOENGAGE_APP_ID = "95PNUHBSYSLLJZ22PEOFMKF2"  # Your Workspace ID
-DATA_API_KEY = "Mj5JSGKcwYum9NKAGmGHJG_E"  # For segments, user data
-CAMPAIGN_API_KEY = "3XMHJ83D2X4V"  # For campaign stats, reports
-DATA_CENTER = "01"  # Your data center is DC-01
+"""
+Configuration for MoEngage Metrics Application
+"""
+import os
 
-# Google Sheets Configuration
-GOOGLE_SHEET_ID = "your_google_sheet_id_here"  # Extract from sheet URL
-GOOGLE_SHEET_NAME = "Metrics"  # Name of the worksheet tab
+# MoEngage API Configuration
+MOENGAGE_CONFIG = {
+    'workspace_id': os.environ.get('MOENGAGE_WORKSPACE_ID', '95PNUHBSYSLLJZ22PEOFMKF2'),
+    'data_api_key': os.environ.get('MOENGAGE_DATA_API_KEY', 'Mj5JSGKcwYum9NKAGmGHJG_E'),
+    'campaign_api_key': os.environ.get('MOENGAGE_CAMPAIGN_API_KEY', '3XMHJ83D2X4V'),
+    'data_center': os.environ.get('MOENGAGE_DATA_CENTER', '01')
+}
 
-# Optional: Customize column headers for your sheet
-SHEET_HEADERS = [
-    "Period Start",
-    "Period End", 
-    "Email per User",
-    "PN per User",
-    "Total Emails Sent",
-    "Total PN Sent",
-    "Total Users"
-]
+# Flask Configuration
+SECRET_KEY = os.environ.get('SECRET_KEY', 'moengage-metrics-secret-key-2026')
+DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
+
+# API Settings
+API_TIMEOUT = 60  # seconds
+RATE_LIMIT_DELAY = 1  # seconds between API calls
+MAX_CAMPAIGN_PAGES = 50  # Limit campaign fetch to prevent timeout

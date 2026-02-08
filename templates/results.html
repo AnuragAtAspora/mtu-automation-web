@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Metrics Results - MoEngage Metrics{% endblock %}
+
+{% block content %}
+<h1>📊 Metrics Results</h1>
+<p class="subtitle">Period: {{ start_date }} to {{ end_date }} | Total Campaigns: {{ total_campaigns }}</p>
+
+<div class="alert alert-success">
+    <strong>Metrics calculated successfully!</strong> Based on {{ total_campaigns }} campaigns analyzed.
+</div>
+
+<!-- UK Metrics -->
+<h2>🇬🇧 UK Metrics</h2>
+
+<table class="metrics-table">
+    <tr>
+        <th>Metric</th>
+        <th>Value</th>
+    </tr>
+    <tr>
+        <td><strong>User Counts</strong></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Total Users</td>
+        <td>{{ "{:,}".format(metrics.uk.total_users) }}</td>
+    </tr>
+    <tr>
+        <td>Active Users (60d)</td>
+        <td>{{ "{:,}".format(metrics.uk.active_users) }}</td>
+    </tr>
+    <tr>
+        <td><strong>Communications per User</strong></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Transactional Push per Active User</td>
+        <td>{{ metrics.uk.tx_pn_per_user }}</td>
+    </tr>
+    <tr>
+        <td>Transactional Email per Active User</td>
+        <td>{{ metrics.uk.tx_email_per_user }}</td>
+    </tr>
+    <tr>
+        <td>Promotional Push per Total User</td>
+        <td>{{ metrics.uk.pr_pn_per_user }}</td>
+    </tr>
+    <tr>
+        <td>Promotional Email per Total User</td>
+        <td>{{ metrics.uk.pr_email_per_user }}</td>
+    </tr>
+    <tr>
+        <td><strong>MTU (Monthly Transacting Users)</strong></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Push MTU %</td>
+        <td>{{ metrics.uk.push_mtu }}%</td>
+    </tr>
+    <tr>
+        <td>Email MTU %</td>
+        <td>{{ metrics.uk.email_mtu }}%</td>
+    </tr>
+    <tr>
+        <td><strong>Delivery & Engagement</strong></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Push Delivery Rate</td>
+        <td>{{ metrics.uk.push_delivery_rate }}%</td>
+    </tr>
+    <tr>
+        <td>Email Delivery Rate</td>
+        <td>{{ metrics.uk.email_delivery_rate }}%</td>
+    </tr>
+    <tr>
+        <td>Push CTR</td>
+        <td>{{ metrics.uk.push_ctr }}%</td>
+    </tr>
+    <tr>
+        <td>Email Open Rate</td>
+        <td>{{ metrics.uk.email_open_rate }}%</td>
+    </tr>
+    <tr>
+        <td><strong>Unsubscribe Rates</strong></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Push Unsubscribe Rate</td>
+        <td>{{ metrics.uk.push_unsub_rate }}%</td>
+    </tr>
+    <tr>
+        <td>Email Unsubscribe Rate</td>
+        <td>{{ metrics.uk.email_unsub_rate }}%</td>
+    </tr>
+</table>
+
+<!-- UAE Metrics -->
+<h2>🇦🇪 UAE Metrics</h2>
+
+<table class="metrics-table">
+    <tr>
+        <th>Metric</th>
+        <th>Value</th>
+    </tr>
+    <tr>
+        <td><strong>User Counts</strong></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Total Users</td>
+        <td>{{ "{:,}".format(metrics.uae.total_users) }}</td>
+    </tr>
+    <tr>
+        <td>Active Users (60d)</td>
+        <td>{{ "{:,}".format(metrics.uae.active_users) }}</td>
+    </tr>
+    <tr>
+        <td><strong>Communications per User</strong></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Transactional Push per Active User</td>
+        <td>{{ metrics.uae.tx_pn_per_user }}</td>
+    </tr>
+    <tr>
+        <td>Transactional Email per Active User</td>
+        <td>{{ metrics.uae.tx_email_per_user }}</td>
+    </tr>
+    <tr>
+        <td>Promotional Push per Total User</td>
+        <td>{{ metrics.uae.pr_pn_per_user }}</td>
+    </tr>
+    <tr>
+        <td>Promotional Email per Total User</td>
+        <td>{{ metrics.uae.pr_email_per_user }}</td>
+    </tr>
+    <tr>
+        <td><strong>MTU (Monthly Transacting Users)</strong></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Push MTU %</td>
+        <td>{{ metrics.uae.push_mtu }}%</td>
+    </tr>
+    <tr>
+        <td>Email MTU %</td>
+        <td>{{ metrics.uae.email_mtu }}%</td>
+    </tr>
+    <tr>
+        <td><strong>Delivery & Engagement</strong></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Push Delivery Rate</td>
+        <td>{{ metrics.uae.push_delivery_rate }}%</td>
+    </tr>
+    <tr>
+        <td>Email Delivery Rate</td>
+        <td>{{ metrics.uae.email_delivery_rate }}%</td>
+    </tr>
+    <tr>
+        <td>Push CTR</td>
+        <td>{{ metrics.uae.push_ctr }}%</td>
+    </tr>
+    <tr>
+        <td>Email Open Rate</td>
+        <td>{{ metrics.uae.email_open_rate }}%</td>
+    </tr>
+    <tr>
+        <td><strong>Unsubscribe Rates</strong></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Push Unsubscribe Rate</td>
+        <td>{{ metrics.uae.push_unsub_rate }}%</td>
+    </tr>
+    <tr>
+        <td>Email Unsubscribe Rate</td>
+        <td>{{ metrics.uae.email_unsub_rate }}%</td>
+    </tr>
+</table>
+
+<div class="text-center mt-4">
+    <a href="{{ url_for('index') }}" class="btn">
+        ← Calculate for Another Period
+    </a>
+</div>
+{% endblock %}

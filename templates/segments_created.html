@@ -1,95 +1,157 @@
 {% extends "base.html" %}
 
-{% block title %}Segments Created Successfully{% endblock %}
+{% block title %}Enter Segment Counts - MoEngage Metrics{% endblock %}
 
 {% block content %}
-<div style="max-width: 1000px; margin: 0 auto;">
-    <div class="alert alert-success">
-        <h4 style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">Segments Ready!</h4>
-        <p style="margin-bottom: 8px;">All {{ segments|length }} MTU segments are available in MoEngage for the period: <strong>{{ period }}</strong></p>
-        <small style="color: var(--text-secondary);">Some segments may have been reused if they already existed with the same criteria.</small>
+<h1>✅ Segments Created Successfully</h1>
+<p class="subtitle">Period: {{ start_date }} to {{ end_date }}</p>
+
+<div class="alert alert-success">
+    <strong>{{ segments|length }} segments created in MoEngage!</strong><br>
+    Click each link below to open the segment in MoEngage and note the user count.
+</div>
+
+{% if failed %}
+<div class="alert alert-warning">
+    <strong>{{ failed|length }} segments failed to create.</strong> You can continue with the segments that were created successfully.
+</div>
+{% endif %}
+
+<h2>📋 Segments Created</h2>
+
+<div class="grid grid-2">
+    <!-- UK Segments -->
+    <div>
+        <h3>🇬🇧 UK Segments</h3>
+        {% for segment in segments if 'UK' in segment.display_name %}
+        <div class="segment-card">
+            <div class="segment-name">{{ segment.display_name }}</div>
+            <div class="segment-id">{{ segment.name }}</div>
+            <a href="{{ segment.url }}" target="_blank" class="btn btn-secondary" style="font-size: 14px; padding: 8px 16px;">
+                Open in MoEngage →
+            </a>
+        </div>
+        {% endfor %}
     </div>
     
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">Available Segments</h3>
+    <!-- UAE Segments -->
+    <div>
+        <h3>🇦🇪 UAE Segments</h3>
+        {% for segment in segments if 'UAE' in segment.display_name %}
+        <div class="segment-card">
+            <div class="segment-name">{{ segment.display_name }}</div>
+            <div class="segment-id">{{ segment.name }}</div>
+            <a href="{{ segment.url }}" target="_blank" class="btn btn-secondary" style="font-size: 14px; padding: 8px 16px;">
+                Open in MoEngage →
+            </a>
         </div>
-        <div class="card-body">
-            <div class="grid grid-2">
-                {% for segment in segments %}
-                <div class="card" style="height: 100%;">
-                    <div class="card-body">
-                        <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">
-                            {% if segment.status == 'reused' %}
-                                ♻️ {{ segment.name }}
-                            {% else %}
-                                👥 {{ segment.name }}
-                            {% endif %}
-                        </h4>
-                        <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;">{{ segment.description }}</p>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <small style="color: var(--text-light);">ID: {{ segment.id }}</small>
-                                {% if segment.status == 'reused' %}
-                                    <br><small style="background: var(--warning-color); color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">Reused Existing</small>
-                                {% else %}
-                                    <br><small style="background: var(--success-color); color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">Newly Created</small>
-                                {% endif %}
-                            </div>
-                            <a href="{{ segment.url }}" target="_blank" class="btn btn-secondary" style="font-size: 14px; padding: 8px 16px;">
-                                View
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-    
-    <div class="card mt-4">
-        <div class="card-header" style="background: var(--warning-color); color: white;">
-            <h3 class="card-title" style="color: white;">Next Steps</h3>
-        </div>
-        <div class="card-body">
-            <div class="grid grid-2">
-                <div>
-                    <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">1. Visit MoEngage Dashboard</h4>
-                    <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 24px;">Go to the segments page and find each segment created above. Note down the user count for each segment.</p>
-                    
-                    <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">2. Collect Segment Counts</h4>
-                    <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 24px;">You'll need the user count from each of the {{ segments|length }} segments to calculate MTU percentages.</p>
-                    
-                    <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">3. Calculate MTU</h4>
-                    <p style="color: var(--text-secondary); font-size: 14px;">Once you have all counts, use our MTU calculator to compute percentages and update Google Sheets.</p>
-                </div>
-                <div class="text-center">
-                    <div style="display: flex; flex-direction: column; gap: 16px;">
-                        <a href="{{ dashboard_url }}" target="_blank" class="btn btn-primary btn-large">
-                            Open MoEngage Dashboard
-                        </a>
-                        <a href="{{ url_for('calculate_mtu_form') }}" class="btn btn-primary btn-large">
-                            MTU Calculator
-                        </a>
-                        <a href="{{ url_for('index') }}" class="btn btn-secondary btn-large">
-                            Back to Home
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="card mt-4">
-        <div class="card-header" style="background: var(--primary-color); color: white;">
-            <h3 class="card-title" style="color: white;">Pro Tip</h3>
-        </div>
-        <div class="card-body">
-            <p style="margin: 0; color: var(--text-secondary);">
-                <strong>Bookmark this page!</strong> The segment links above will take you directly to each segment in MoEngage. 
-                You can also search for segments with the prefix "Automated_" in your MoEngage dashboard.
-            </p>
-        </div>
+        {% endfor %}
     </div>
 </div>
+
+<h2 class="mt-4">📝 Enter Segment Counts</h2>
+
+<div class="alert alert-info">
+    Open each segment link above, note the user count shown in MoEngage, then enter those counts below.
+</div>
+
+<form method="POST" action="{{ url_for('calculate_metrics') }}">
+    <div class="grid grid-2">
+        <!-- UK Counts -->
+        <div>
+            <h3>🇬🇧 UK User Counts</h3>
+            
+            <div class="form-group">
+                <label for="uk_total_users">All Users</label>
+                <input type="number" id="uk_total_users" name="uk_total_users" required min="0" value="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="uk_active_users">Active Users (60d)</label>
+                <input type="number" id="uk_active_users" name="uk_active_users" required min="0" value="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="uk_push_received">Received Push</label>
+                <input type="number" id="uk_push_received" name="uk_push_received" required min="0" value="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="uk_email_received">Received Email</label>
+                <input type="number" id="uk_email_received" name="uk_email_received" required min="0" value="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="uk_push_received_active">Active + Received Push</label>
+                <input type="number" id="uk_push_received_active" name="uk_push_received_active" required min="0" value="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="uk_email_received_active">Active + Received Email</label>
+                <input type="number" id="uk_email_received_active" name="uk_email_received_active" required min="0" value="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="uk_push_unsubscribed">Unsubscribed Push</label>
+                <input type="number" id="uk_push_unsubscribed" name="uk_push_unsubscribed" required min="0" value="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="uk_email_unsubscribed">Unsubscribed Email</label>
+                <input type="number" id="uk_email_unsubscribed" name="uk_email_unsubscribed" required min="0" value="0">
+            </div>
+        </div>
+        
+        <!-- UAE Counts -->
+        <div>
+            <h3>🇦🇪 UAE User Counts</h3>
+            
+            <div class="form-group">
+                <label for="uae_total_users">All Users</label>
+                <input type="number" id="uae_total_users" name="uae_total_users" required min="0" value="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="uae_active_users">Active Users (60d)</label>
+                <input type="number" id="uae_active_users" name="uae_active_users" required min="0" value="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="uae_push_received">Received Push</label>
+                <input type="number" id="uae_push_received" name="uae_push_received" required min="0" value="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="uae_email_received">Received Email</label>
+                <input type="number" id="uae_email_received" name="uae_email_received" required min="0" value="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="uae_push_received_active">Active + Received Push</label>
+                <input type="number" id="uae_push_received_active" name="uae_push_received_active" required min="0" value="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="uae_email_received_active">Active + Received Email</label>
+                <input type="number" id="uae_email_received_active" name="uae_email_received_active" required min="0" value="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="uae_push_unsubscribed">Unsubscribed Push</label>
+                <input type="number" id="uae_push_unsubscribed" name="uae_push_unsubscribed" required min="0" value="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="uae_email_unsubscribed">Unsubscribed Email</label>
+                <input type="number" id="uae_email_unsubscribed" name="uae_email_unsubscribed" required min="0" value="0">
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-center mt-4">
+        <button type="submit" class="btn btn-large">
+            Calculate Metrics →
+        </button>
+    </div>
+</form>
 {% endblock %}
