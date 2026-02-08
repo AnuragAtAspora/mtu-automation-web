@@ -5,6 +5,7 @@ import requests
 import base64
 import time
 from typing import Dict, List, Optional
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 class CampaignFetcher:
@@ -174,24 +175,35 @@ class CampaignFetcher:
     
     def fetch_campaign_meta_batch(self, campaign_ids: List[str], timeout: int = 30) -> Dict:
         """
-        Fetch metadata for multiple campaigns in one call
+        Fetch metadata for multiple campaigns in parallel
         
         Args:
             campaign_ids: List of campaign IDs
-            timeout: Request timeout
+            timeout: Request timeout per call
             
         Returns:
             Dict mapping campaign_id to metadata
         """
         try:
-            # Campaign Meta API doesn't support multiple IDs in one call
-            # But we can make parallel-ish calls by reducing delays
             results = {}
             
-            for campaign_id in campaign_ids:
-                meta = self.fetch_campaign_meta(campaign_id, timeout=10)
-                if meta.get('success'):
-                    results[campaign_id] = meta
+            # Use ThreadPoolExecutor to make parallel API calls
+            with ThreadPoolExecutor(max_workers=10) as executor:
+                # Submit all tasks
+                future_to_id = {
+                    executor.submit(self.fetch_campaign_meta, cid, 10): cid 
+                    for cid in campaign_ids
+                }
+                
+                # Collect results as they complete
+                for future in as_completed(future_to_id):
+                    campaign_id = future_to_id[future]
+                    try:
+                        meta = future.result()
+                        if meta.get('success'):
+                            results[campaign_id] = meta
+                    except Exception as e:
+                        print(f"Error fetching meta for {campaign_id[:8]}: {e}")
             
             return results
                 
