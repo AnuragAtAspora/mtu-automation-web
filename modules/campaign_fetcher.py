@@ -241,33 +241,37 @@ class CampaignFetcher:
                            max_pages: Optional[int] = None,
                            fetch_meta: bool = True) -> List[Dict]:
         """
-        Fetch all campaigns created within date range with pagination
+        Fetch all campaigns that SENT during the date range
+        
+        Strategy: 
+        1. Use Stats API without campaign_ids to get ALL campaigns with stats in date range
+        2. Then fetch meta for each to get delivery type
         
         Args:
             start_date: Start date (YYYY-MM-DD)
             end_date: End date (YYYY-MM-DD)
             max_pages: Maximum pages to fetch (None = all)
-            fetch_meta: Whether to fetch metadata for each campaign (already have it from Meta API)
+            fetch_meta: Whether to fetch metadata for each campaign
             
         Returns:
             List of campaign dictionaries
         """
         all_campaigns = []
-        page = 1
-        limit = 15  # Max for Campaign Meta API
+        offset = 0
+        limit = 10  # Stats API max
         
-        print(f"Fetching campaigns created from {start_date} to {end_date}...")
+        print(f"Fetching campaigns that SENT from {start_date} to {end_date}...")
         if max_pages:
             print(f"Max pages limit: {max_pages}")
         
+        page = 1
         while True:
-            # First, get campaigns by date using Campaign Meta API
-            meta_result = self.fetch_campaigns_by_date(start_date, end_date, limit, page)
+            # Fetch stats for all campaigns in date range (no campaign_ids filter)
+            result = self.fetch_campaign_stats(start_date, end_date, limit, offset)
             
-            if not meta_result.get('success'):
-                print(f"❌ Error fetching campaigns: {meta_result.get('error')}")
-                print(f"   Message: {meta_result.get('message', 'No message')}")
-                # Return what we have so far
+            if 'error' in result:
+                print(f"❌ Error fetching campaigns: {result['error']}")
+                print(f"   Message: {result.get('message', 'No message')}")
                 if all_campaigns:
                     print(f"⚠️  Returning {len(all_campaigns)} campaigns fetched before error")
                     return all_campaigns
@@ -275,62 +279,47 @@ class CampaignFetcher:
                     print(f"⚠️  No campaigns fetched, returning empty list")
                     return []
             
-            campaigns = meta_result.get('campaigns', [])
+            campaign_data = result.get('data', {})
+            total_campaigns = result.get('total_campaigns', 0)
+            total_pages = result.get('total_pages', 0)
+            current_page = result.get('current_page', 1)
             
-            if not campaigns:
+            print(f"Page {current_page}/{total_pages} - Found {len(campaign_data)} campaigns")
+            
+            if not campaign_data:
                 print(f"No more campaigns on page {page}")
                 break
             
-            print(f"Page {page} - Found {len(campaigns)} campaigns")
-            
-            # Batch fetch stats for all campaigns on this page (10 at a time)
-            campaign_ids = [c.get('campaign_id') for c in campaigns if c.get('campaign_id')]
-            
-            # Fetch stats in batches of 10
-            for i in range(0, len(campaign_ids), 10):
-                batch_ids = campaign_ids[i:i+10]
-                stats_batch = self.fetch_campaign_stats_batch(batch_ids, start_date, end_date)
+            # Process each campaign
+            for campaign_id, campaign_stats_list in campaign_data.items():
+                campaign_info = self._parse_campaign_stats(campaign_id, campaign_stats_list)
                 
-                # Match stats with campaigns
-                for campaign in campaigns:
-                    campaign_id = campaign.get('campaign_id')
-                    if not campaign_id or campaign_id not in batch_ids:
-                        continue
-                    
-                    # Get stats for this campaign
-                    if campaign_id in stats_batch:
-                        campaign_info = stats_batch[campaign_id]
+                # Fetch metadata to determine promotional vs transactional
+                if fetch_meta:
+                    meta = self.fetch_campaign_meta(campaign_id)
+                    if meta.get('success'):
+                        campaign_info['campaign_name'] = meta.get('campaign_name', '')
+                        campaign_info['channel'] = meta.get('channel', '')
+                        campaign_info['delivery_type'] = meta.get('delivery_type', 'unknown')
+                        campaign_info['status'] = meta.get('status', '')
+                        campaign_info['campaign_start_time'] = meta.get('campaign_start_time', '')
+                        
+                        # Categorize based on delivery type
+                        if meta.get('delivery_type') == 'ONE_TIME':
+                            campaign_info['category'] = 'promotional'
+                        elif meta.get('delivery_type') == 'EVENT_TRIGGERED':
+                            campaign_info['category'] = 'transactional'
+                        else:
+                            campaign_info['category'] = 'unknown'
                     else:
-                        # If stats fetch fails, create basic info
-                        campaign_info = {
-                            'campaign_id': campaign_id,
-                            'sent': 0,
-                            'delivered': 0,
-                            'open': 0,
-                            'click': 0,
-                            'unsubscribe': 0,
-                            'bounce': 0,
-                            'failed': 0
-                        }
-                    
-                    # Add metadata from Campaign Meta API
-                    campaign_info['campaign_name'] = campaign.get('campaign_name', '')
-                    campaign_info['channel'] = campaign.get('channel', '')
-                    campaign_info['delivery_type'] = campaign.get('campaign_delivery_type', 'unknown')
-                    campaign_info['status'] = campaign.get('campaign_status', '')
-                    campaign_info['campaign_start_time'] = campaign.get('campaign_start_time', '')  # Add start time
-                    
-                    # Categorize based on delivery type
-                    if campaign.get('campaign_delivery_type') == 'ONE_TIME':
-                        campaign_info['category'] = 'promotional'
-                    elif campaign.get('campaign_delivery_type') == 'EVENT_TRIGGERED':
-                        campaign_info['category'] = 'transactional'
-                    else:
+                        campaign_info['delivery_type'] = 'unknown'
                         campaign_info['category'] = 'unknown'
-                    
-                    all_campaigns.append(campaign_info)
+                        campaign_info['campaign_name'] = ''
+                        campaign_info['channel'] = ''
+                        campaign_info['status'] = ''
+                        campaign_info['campaign_start_time'] = ''
                 
-                time.sleep(0.3)  # Small delay between batches
+                all_campaigns.append(campaign_info)
             
             # Check max pages limit
             if max_pages and page >= max_pages:
@@ -339,10 +328,11 @@ class CampaignFetcher:
                 print(f"✅ Fetched {len(all_campaigns)} campaigns (partial data)")
                 return all_campaigns
             
-            # If we got less than limit, we're done
-            if len(campaigns) < limit:
+            # Check if there are more pages
+            if current_page >= total_pages:
                 break
             
+            offset += limit
             page += 1
             time.sleep(0.5)  # Small delay between requests
         
