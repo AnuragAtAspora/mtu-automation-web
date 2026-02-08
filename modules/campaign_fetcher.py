@@ -14,8 +14,8 @@ class CampaignFetcher:
         self.workspace_id = workspace_id
         self.campaign_api_key = campaign_api_key
         self.data_center = data_center
-        # Try v2 Stats API endpoint
-        self.stats_api_url = f"https://api-{data_center}.moengage.com/v2/campaigns/stats"
+        # Use Campaign Search API instead of Stats API
+        self.stats_api_url = f"https://api-{data_center}.moengage.com/v1/campaigns/search"
         self.meta_api_url = f"https://api-{data_center}.moengage.com/core-services/v1/campaigns/meta"
         
     def _get_headers(self) -> Dict:
@@ -33,7 +33,7 @@ class CampaignFetcher:
     def fetch_campaign_stats(self, start_date: str, end_date: str, 
                             limit: int = 10, offset: int = 0, timeout: int = 30) -> Dict:
         """
-        Fetch campaign statistics using Stats API
+        Fetch campaign statistics using Campaign Search API
         
         Args:
             start_date: Start date (YYYY-MM-DD)
@@ -46,11 +46,20 @@ class CampaignFetcher:
             Dict with campaign stats or error
         """
         try:
+            # Campaign Search API payload format
             payload = {
-                "from_date": start_date,
-                "to_date": end_date,
-                "limit": limit,
-                "offset": offset
+                "filter": {
+                    "from": start_date,
+                    "to": end_date
+                },
+                "sort": {
+                    "type": "created_time",
+                    "order": "desc"
+                },
+                "pagination": {
+                    "limit": limit,
+                    "offset": offset
+                }
             }
             
             response = requests.post(
@@ -60,14 +69,36 @@ class CampaignFetcher:
                 timeout=timeout
             )
             
-            print(f"Stats API Response: {response.status_code}")
+            print(f"Campaign Search API Response: {response.status_code}")
             
             if response.status_code == 200:
                 data = response.json()
-                print(f"Stats API returned data with keys: {list(data.keys()) if isinstance(data, dict) else 'not a dict'}")
-                return data
+                print(f"Campaign Search API returned data with keys: {list(data.keys()) if isinstance(data, dict) else 'not a dict'}")
+                
+                # Transform Campaign Search API response to match expected format
+                campaigns = data.get('campaigns', [])
+                total = data.get('total', len(campaigns))
+                
+                # Calculate pagination info
+                current_page = (offset // limit) + 1
+                total_pages = (total + limit - 1) // limit
+                
+                # Transform to expected format with campaign_id as key
+                campaign_dict = {}
+                for campaign in campaigns:
+                    campaign_id = campaign.get('id', campaign.get('campaign_id'))
+                    if campaign_id:
+                        # Wrap in list to match Stats API format
+                        campaign_dict[campaign_id] = [campaign]
+                
+                return {
+                    'data': campaign_dict,
+                    'total_campaigns': total,
+                    'total_pages': total_pages,
+                    'current_page': current_page
+                }
             else:
-                error_msg = f"Stats API Error: {response.status_code}"
+                error_msg = f"Campaign Search API Error: {response.status_code}"
                 print(f"❌ {error_msg}")
                 print(f"   Response: {response.text[:500]}")
                 return {
@@ -76,7 +107,7 @@ class CampaignFetcher:
                 }
                 
         except requests.exceptions.Timeout:
-            return {'error': 'Timeout', 'message': 'Stats API request timed out'}
+            return {'error': 'Timeout', 'message': 'Campaign Search API request timed out'}
         except Exception as e:
             return {'error': 'Exception', 'message': str(e)}
     
@@ -239,7 +270,7 @@ class CampaignFetcher:
         return all_campaigns
     
     def _parse_campaign_stats(self, campaign_id: str, campaign_stats: List[Dict]) -> Dict:
-        """Parse campaign statistics from API response"""
+        """Parse campaign statistics from Campaign Search API response"""
         
         if not campaign_stats or len(campaign_stats) == 0:
             return {
@@ -247,27 +278,21 @@ class CampaignFetcher:
                 'error': 'No stats available'
             }
         
-        # Get the first stats entry
-        stats = campaign_stats[0]
-        platforms = stats.get('platforms', {})
-        all_platforms = platforms.get('ALL_PLATFORMS', {})
-        locales = all_platforms.get('locales', {})
-        all_locale = locales.get('all_locale', {})
-        variations = all_locale.get('variations', {})
-        all_variations = variations.get('all_variations', {})
+        # Get the campaign data
+        campaign = campaign_stats[0]
         
-        # Extract performance stats
-        performance = all_variations.get('performance_stats', {})
+        # Campaign Search API returns stats directly in the campaign object
+        stats = campaign.get('stats', {})
         
         return {
             'campaign_id': campaign_id,
-            'sent': performance.get('sent', 0),
-            'delivered': performance.get('delivered', 0),
-            'open': performance.get('open', 0),
-            'click': performance.get('click', 0),
-            'unsubscribe': performance.get('unsubscribe', 0),
-            'bounce': performance.get('bounce', 0),
-            'failed': performance.get('failed', 0)
+            'sent': stats.get('sent', 0),
+            'delivered': stats.get('delivered', 0),
+            'open': stats.get('open', 0),
+            'click': stats.get('click', 0),
+            'unsubscribe': stats.get('unsubscribe', 0),
+            'bounce': stats.get('bounce', 0),
+            'failed': stats.get('failed', 0)
         }
     
     def group_campaigns_by_category(self, campaigns: List[Dict]) -> Dict:
