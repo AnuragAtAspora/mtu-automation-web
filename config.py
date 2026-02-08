@@ -18,4 +18,4 @@ DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 # API Settings
 API_TIMEOUT = 60  # seconds
 RATE_LIMIT_DELAY = 1  # seconds between API calls
-MAX_CAMPAIGN_PAGES = int(os.environ.get('MAX_CAMPAIGN_PAGES', '20'))  # Limit campaign fetch to prevent timeout (15 campaigns per page)
+MAX_CAMPAIGN_PAGES = int(os.environ.get('MAX_CAMPAIGN_PAGES', '100'))  # Limit campaign fetch to prevent timeout (15 campaigns per page = 1500 campaigns max)
