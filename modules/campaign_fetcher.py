@@ -372,6 +372,8 @@ class CampaignFetcher:
                 "metric_type": "TOTAL"
             }
             
+            print(f"Fetching stats for {len(campaign_ids[:10])} campaigns: {campaign_ids[:10][:3]}...")  # Show first 3 IDs
+            
             response = requests.post(
                 self.stats_api_url,
                 json=payload,
@@ -379,15 +381,27 @@ class CampaignFetcher:
                 timeout=timeout
             )
             
+            print(f"Stats API batch response: {response.status_code}")
+            
             if response.status_code == 200:
                 data = response.json()
                 campaign_data = data.get('data', {})
                 
+                print(f"Stats API returned data for {len(campaign_data)} campaigns")
+                
+                # Debug: Check which campaigns have no data
+                missing_campaigns = [cid for cid in campaign_ids if cid not in campaign_data]
+                if missing_campaigns:
+                    print(f"⚠️  No stats data for {len(missing_campaigns)} campaigns: {missing_campaigns[:3]}")
+                
                 result = {}
                 for campaign_id in campaign_ids:
                     if campaign_id in campaign_data:
-                        result[campaign_id] = self._parse_campaign_stats(campaign_id, campaign_data[campaign_id])
+                        parsed = self._parse_campaign_stats(campaign_id, campaign_data[campaign_id])
+                        print(f"Campaign {campaign_id[:8]}... - sent: {parsed.get('sent', 0)}, clicks: {parsed.get('click', 0)}")
+                        result[campaign_id] = parsed
                     else:
+                        print(f"Campaign {campaign_id[:8]}... - NO DATA from Stats API")
                         result[campaign_id] = {
                             'campaign_id': campaign_id,
                             'sent': 0,
@@ -402,6 +416,7 @@ class CampaignFetcher:
                 return result
             else:
                 print(f"Stats API batch error: {response.status_code}")
+                print(f"Response: {response.text[:500]}")
                 # Return empty stats for all campaigns
                 return {cid: {
                     'campaign_id': cid,
@@ -484,6 +499,7 @@ class CampaignFetcher:
         """Parse campaign statistics from Stats API response"""
         
         if not campaign_stats or len(campaign_stats) == 0:
+            print(f"⚠️  Campaign {campaign_id[:8]}... - Empty stats list")
             return {
                 'campaign_id': campaign_id,
                 'error': 'No stats available'
@@ -491,6 +507,9 @@ class CampaignFetcher:
         
         # Get the campaign data - Stats API returns nested structure
         campaign = campaign_stats[0]
+        
+        # Debug: Show structure
+        print(f"Campaign {campaign_id[:8]}... structure keys: {list(campaign.keys())}")
         
         # Initialize totals
         sent = 0
@@ -505,8 +524,11 @@ class CampaignFetcher:
         # We need to aggregate across platforms but NOT double-count locales/variations
         platforms = campaign.get('platforms', {})
         
+        print(f"Campaign {campaign_id[:8]}... has platforms: {list(platforms.keys())}")
+        
         for platform_name, platform_data in platforms.items():
             locales = platform_data.get('locales', {})
+            print(f"  Platform {platform_name} has locales: {list(locales.keys())}")
             
             # Only use 'all_locales' to avoid double counting
             all_locales = locales.get('all_locales', {})
@@ -514,6 +536,8 @@ class CampaignFetcher:
                 variations = all_locales.get('variations', {})
                 all_variations = variations.get('all_variations', {})
                 perf_stats = all_variations.get('performance_stats', {})
+                
+                print(f"    all_locales perf_stats: sent={perf_stats.get('sent', 0)}, click={perf_stats.get('click', 0)}")
                 
                 # Aggregate stats across platforms
                 sent += perf_stats.get('sent', 0)
@@ -523,6 +547,8 @@ class CampaignFetcher:
                 unsubscribe += perf_stats.get('unsubscribe', 0)
                 bounce += perf_stats.get('bounced', 0)
                 failed += perf_stats.get('failed', 0)
+            else:
+                print(f"    No all_locales found for platform {platform_name}")
         
         return {
             'campaign_id': campaign_id,
