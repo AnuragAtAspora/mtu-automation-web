@@ -1872,7 +1872,7 @@ def create_metrics_segments(start_date, end_date):
                             "value_type": "absolute",
                             "period_unit": "days"
                         },
-                        "action_name": "Notification Received Android",
+                        "action_name": "NOTIFICATION_RECEIVED_MOE",
                         "execution": {
                             "count": 1,
                             "type": "atleast"
@@ -1912,7 +1912,7 @@ def create_metrics_segments(start_date, end_date):
                             "value_type": "absolute",
                             "period_unit": "days"
                         },
-                        "action_name": "Notification Received iOS",
+                        "action_name": "n_i_s",
                         "execution": {
                             "count": 1,
                             "type": "atleast"
@@ -1992,7 +1992,7 @@ def create_metrics_segments(start_date, end_date):
                             "value_type": "absolute",
                             "period_unit": "days"
                         },
-                        "action_name": "Notification Received Android",
+                        "action_name": "NOTIFICATION_RECEIVED_MOE",
                         "execution": {
                             "count": 1,
                             "type": "atleast"
@@ -2071,7 +2071,7 @@ def create_metrics_segments(start_date, end_date):
                             "value_type": "absolute",
                             "period_unit": "days"
                         },
-                        "action_name": "Notification Received iOS",
+                        "action_name": "n_i_s",
                         "execution": {
                             "count": 1,
                             "type": "atleast"
