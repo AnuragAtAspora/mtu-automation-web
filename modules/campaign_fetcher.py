@@ -283,45 +283,53 @@ class CampaignFetcher:
             
             print(f"Page {page} - Found {len(campaigns)} campaigns")
             
-            # For each campaign, fetch stats
-            for campaign in campaigns:
-                campaign_id = campaign.get('campaign_id')
-                if not campaign_id:
-                    continue
+            # Batch fetch stats for all campaigns on this page (10 at a time)
+            campaign_ids = [c.get('campaign_id') for c in campaigns if c.get('campaign_id')]
+            
+            # Fetch stats in batches of 10
+            for i in range(0, len(campaign_ids), 10):
+                batch_ids = campaign_ids[i:i+10]
+                stats_batch = self.fetch_campaign_stats_batch(batch_ids, start_date, end_date)
                 
-                # Get stats for this specific campaign
-                stats_result = self.fetch_campaign_stats_by_id(campaign_id, start_date, end_date)
+                # Match stats with campaigns
+                for campaign in campaigns:
+                    campaign_id = campaign.get('campaign_id')
+                    if not campaign_id or campaign_id not in batch_ids:
+                        continue
+                    
+                    # Get stats for this campaign
+                    if campaign_id in stats_batch:
+                        campaign_info = stats_batch[campaign_id]
+                    else:
+                        # If stats fetch fails, create basic info
+                        campaign_info = {
+                            'campaign_id': campaign_id,
+                            'sent': 0,
+                            'delivered': 0,
+                            'open': 0,
+                            'click': 0,
+                            'unsubscribe': 0,
+                            'bounce': 0,
+                            'failed': 0
+                        }
+                    
+                    # Add metadata from Campaign Meta API
+                    campaign_info['campaign_name'] = campaign.get('campaign_name', '')
+                    campaign_info['channel'] = campaign.get('channel', '')
+                    campaign_info['delivery_type'] = campaign.get('campaign_delivery_type', 'unknown')
+                    campaign_info['status'] = campaign.get('campaign_status', '')
+                    
+                    # Categorize based on delivery type
+                    if campaign.get('campaign_delivery_type') == 'ONE_TIME':
+                        campaign_info['category'] = 'promotional'
+                    elif campaign.get('campaign_delivery_type') == 'EVENT_TRIGGERED':
+                        campaign_info['category'] = 'transactional'
+                    else:
+                        campaign_info['category'] = 'unknown'
+                    
+                    all_campaigns.append(campaign_info)
                 
-                if 'error' not in stats_result:
-                    campaign_info = stats_result
-                else:
-                    # If stats fetch fails, create basic info
-                    campaign_info = {
-                        'campaign_id': campaign_id,
-                        'sent': 0,
-                        'delivered': 0,
-                        'open': 0,
-                        'click': 0,
-                        'unsubscribe': 0,
-                        'bounce': 0,
-                        'failed': 0
-                    }
-                
-                # Add metadata from Campaign Meta API
-                campaign_info['campaign_name'] = campaign.get('campaign_name', '')
-                campaign_info['channel'] = campaign.get('channel', '')
-                campaign_info['delivery_type'] = campaign.get('campaign_delivery_type', 'unknown')
-                campaign_info['status'] = campaign.get('campaign_status', '')
-                
-                # Categorize based on delivery type
-                if campaign.get('campaign_delivery_type') == 'ONE_TIME':
-                    campaign_info['category'] = 'promotional'
-                elif campaign.get('campaign_delivery_type') == 'EVENT_TRIGGERED':
-                    campaign_info['category'] = 'transactional'
-                else:
-                    campaign_info['category'] = 'unknown'
-                
-                all_campaigns.append(campaign_info)
+                time.sleep(0.3)  # Small delay between batches
             
             # Check max pages limit
             if max_pages and page >= max_pages:
@@ -338,6 +346,84 @@ class CampaignFetcher:
         
         print(f"✅ Fetched {len(all_campaigns)} campaigns")
         return all_campaigns
+    
+    def fetch_campaign_stats_batch(self, campaign_ids: List[str], start_date: str, end_date: str, timeout: int = 30) -> Dict:
+        """
+        Fetch stats for multiple campaigns in one call (max 10)
+        
+        Args:
+            campaign_ids: List of campaign IDs (max 10)
+            start_date: Start date (YYYY-MM-DD)
+            end_date: End date (YYYY-MM-DD)
+            timeout: Request timeout
+            
+        Returns:
+            Dict mapping campaign_id to stats dict
+        """
+        try:
+            payload = {
+                "request_id": f"stats_batch_{int(time.time())}",
+                "campaign_ids": campaign_ids[:10],  # Max 10
+                "start_date": start_date,
+                "end_date": end_date,
+                "attribution_type": "VIEW_THROUGH",
+                "metric_type": "TOTAL"
+            }
+            
+            response = requests.post(
+                self.stats_api_url,
+                json=payload,
+                headers=self._get_headers(),
+                timeout=timeout
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                campaign_data = data.get('data', {})
+                
+                result = {}
+                for campaign_id in campaign_ids:
+                    if campaign_id in campaign_data:
+                        result[campaign_id] = self._parse_campaign_stats(campaign_id, campaign_data[campaign_id])
+                    else:
+                        result[campaign_id] = {
+                            'campaign_id': campaign_id,
+                            'sent': 0,
+                            'delivered': 0,
+                            'open': 0,
+                            'click': 0,
+                            'unsubscribe': 0,
+                            'bounce': 0,
+                            'failed': 0
+                        }
+                
+                return result
+            else:
+                print(f"Stats API batch error: {response.status_code}")
+                # Return empty stats for all campaigns
+                return {cid: {
+                    'campaign_id': cid,
+                    'sent': 0,
+                    'delivered': 0,
+                    'open': 0,
+                    'click': 0,
+                    'unsubscribe': 0,
+                    'bounce': 0,
+                    'failed': 0
+                } for cid in campaign_ids}
+                
+        except Exception as e:
+            print(f"Stats API batch exception: {e}")
+            return {cid: {
+                'campaign_id': cid,
+                'sent': 0,
+                'delivered': 0,
+                'open': 0,
+                'click': 0,
+                'unsubscribe': 0,
+                'bounce': 0,
+                'failed': 0
+            } for cid in campaign_ids}
     
     def fetch_campaign_stats_by_id(self, campaign_id: str, start_date: str, end_date: str, timeout: int = 30) -> Dict:
         """
