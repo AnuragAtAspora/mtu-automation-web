@@ -14,7 +14,8 @@ class CampaignFetcher:
         self.workspace_id = workspace_id
         self.campaign_api_key = campaign_api_key
         self.data_center = data_center
-        self.stats_api_url = f"https://api-{data_center}.moengage.com/v1/campaigns/stats"
+        # Try v2 Stats API endpoint
+        self.stats_api_url = f"https://api-{data_center}.moengage.com/v2/campaigns/stats"
         self.meta_api_url = f"https://api-{data_center}.moengage.com/core-services/v1/campaigns/meta"
         
     def _get_headers(self) -> Dict:
