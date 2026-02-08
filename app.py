@@ -1155,13 +1155,6 @@ def calculate_final_metrics():
         import traceback
         traceback.print_exc()
         return redirect(url_for('comprehensive_metrics'))
-                             campaign_data=campaign_data_obj,
-                             user_counts=user_counts_obj,
-                             segment_ids=segment_ids)
-        
-    except Exception as e:
-        flash(f'Error calculating final metrics: {str(e)}', 'error')
-        return redirect(url_for('comprehensive_metrics'))
 
 @app.route('/calculate-mtu', methods=['POST'])
 def calculate_mtu():
