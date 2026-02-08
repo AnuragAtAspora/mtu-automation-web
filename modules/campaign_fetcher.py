@@ -98,6 +98,80 @@ class CampaignFetcher:
         except Exception as e:
             return {'error': 'Exception', 'message': str(e)}
     
+    def fetch_campaigns_by_date(self, start_date: str, end_date: str, 
+                                limit: int = 10, page: int = 1, timeout: int = 30) -> Dict:
+        """
+        Fetch campaigns created within date range using Campaign Meta API
+        
+        Args:
+            start_date: Start date (YYYY-MM-DD)
+            end_date: End date (YYYY-MM-DD)
+            limit: Number of campaigns per page (max 15)
+            page: Page number
+            timeout: Request timeout
+            
+        Returns:
+            Dict with campaign list or error
+        """
+        try:
+            # Convert YYYY-MM-DD to DD-MM-YYYY format for Campaign Meta API
+            from_date = '-'.join(start_date.split('-')[::-1])
+            to_date = '-'.join(end_date.split('-')[::-1])
+            
+            payload = {
+                "request_id": f"meta_date_{int(time.time())}",
+                "page": page,
+                "limit": min(limit, 15),  # Max 15 per API docs
+                "campaign_fields": {
+                    "created_date": {
+                        "from_date": from_date,
+                        "to_date": to_date
+                    }
+                }
+            }
+            
+            response = requests.post(
+                self.meta_api_url,
+                json=payload,
+                headers=self._get_headers(),
+                timeout=timeout
+            )
+            
+            print(f"Campaign Meta API Response: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Campaign Meta API returns array of campaigns
+                if isinstance(data, list):
+                    campaigns = data
+                else:
+                    campaigns = data.get('campaigns', [])
+                
+                print(f"Campaign Meta API returned {len(campaigns)} campaigns")
+                
+                return {
+                    'success': True,
+                    'campaigns': campaigns,
+                    'count': len(campaigns)
+                }
+            else:
+                error_msg = f"Campaign Meta API Error: {response.status_code}"
+                print(f"❌ {error_msg}")
+                print(f"   Response: {response.text[:500]}")
+                return {
+                    'success': False,
+                    'error': error_msg,
+                    'message': response.text[:200]
+                }
+                
+        except Exception as e:
+            return {
+                'success': False,
+                'error': 'Exception',
+                'message': str(e)
+            }
+    
     def fetch_campaign_meta(self, campaign_id: str, timeout: int = 15) -> Dict:
         """
         Fetch campaign metadata using Campaign Meta API
@@ -167,33 +241,33 @@ class CampaignFetcher:
                            max_pages: Optional[int] = None,
                            fetch_meta: bool = True) -> List[Dict]:
         """
-        Fetch all campaigns with pagination
+        Fetch all campaigns created within date range with pagination
         
         Args:
             start_date: Start date (YYYY-MM-DD)
             end_date: End date (YYYY-MM-DD)
             max_pages: Maximum pages to fetch (None = all)
-            fetch_meta: Whether to fetch metadata for each campaign
+            fetch_meta: Whether to fetch metadata for each campaign (already have it from Meta API)
             
         Returns:
             List of campaign dictionaries
         """
         all_campaigns = []
-        offset = 0
-        limit = 10
-        pages_fetched = 0
+        page = 1
+        limit = 15  # Max for Campaign Meta API
         
-        print(f"Fetching campaigns from {start_date} to {end_date}...")
+        print(f"Fetching campaigns created from {start_date} to {end_date}...")
         if max_pages:
             print(f"Max pages limit: {max_pages}")
         
         while True:
-            result = self.fetch_campaign_stats(start_date, end_date, limit, offset)
+            # First, get campaigns by date using Campaign Meta API
+            meta_result = self.fetch_campaigns_by_date(start_date, end_date, limit, page)
             
-            if 'error' in result:
-                print(f"❌ Error fetching campaigns: {result['error']}")
-                print(f"   Message: {result.get('message', 'No message')}")
-                # Return what we have so far instead of breaking with nothing
+            if not meta_result.get('success'):
+                print(f"❌ Error fetching campaigns: {meta_result.get('error')}")
+                print(f"   Message: {meta_result.get('message', 'No message')}")
+                # Return what we have so far
                 if all_campaigns:
                     print(f"⚠️  Returning {len(all_campaigns)} campaigns fetched before error")
                     return all_campaigns
@@ -201,60 +275,122 @@ class CampaignFetcher:
                     print(f"⚠️  No campaigns fetched, returning empty list")
                     return []
             
-            # Check if response has the expected structure
-            if 'data' not in result:
-                print(f"❌ Unexpected API response structure: {list(result.keys())}")
-                return all_campaigns
+            campaigns = meta_result.get('campaigns', [])
             
-            total_campaigns = result.get('total_campaigns', 0)
-            total_pages = result.get('total_pages', 0)
-            current_page = result.get('current_page', 1)
-            pages_fetched += 1
+            if not campaigns:
+                print(f"No more campaigns on page {page}")
+                break
             
-            print(f"Page {current_page}/{total_pages} - Total campaigns: {total_campaigns}")
+            print(f"Page {page} - Found {len(campaigns)} campaigns")
             
-            # Extract campaign data
-            campaign_data = result.get('data', {})
-            
-            for campaign_id, campaign_stats_list in campaign_data.items():
-                campaign_info = self._parse_campaign_stats(campaign_id, campaign_stats_list)
+            # For each campaign, fetch stats
+            for campaign in campaigns:
+                campaign_id = campaign.get('campaign_id')
+                if not campaign_id:
+                    continue
                 
-                # Fetch metadata to determine promotional vs transactional
-                if fetch_meta:
-                    meta = self.fetch_campaign_meta(campaign_id)
-                    if meta.get('success'):
-                        campaign_info['campaign_name'] = meta.get('campaign_name', '')
-                        campaign_info['channel'] = meta.get('channel', '')
-                        campaign_info['delivery_type'] = meta.get('delivery_type', 'unknown')
-                        
-                        # Categorize based on delivery type
-                        if meta.get('delivery_type') == 'ONE_TIME':
-                            campaign_info['category'] = 'promotional'
-                        elif meta.get('delivery_type') == 'EVENT_TRIGGERED':
-                            campaign_info['category'] = 'transactional'
-                        else:
-                            campaign_info['category'] = 'unknown'
-                    else:
-                        campaign_info['delivery_type'] = 'unknown'
-                        campaign_info['category'] = 'unknown'
+                # Get stats for this specific campaign
+                stats_result = self.fetch_campaign_stats_by_id(campaign_id, start_date, end_date)
+                
+                if 'error' not in stats_result:
+                    campaign_info = stats_result
+                else:
+                    # If stats fetch fails, create basic info
+                    campaign_info = {
+                        'campaign_id': campaign_id,
+                        'sent': 0,
+                        'delivered': 0,
+                        'open': 0,
+                        'click': 0,
+                        'unsubscribe': 0,
+                        'bounce': 0,
+                        'failed': 0
+                    }
+                
+                # Add metadata from Campaign Meta API
+                campaign_info['campaign_name'] = campaign.get('campaign_name', '')
+                campaign_info['channel'] = campaign.get('channel', '')
+                campaign_info['delivery_type'] = campaign.get('campaign_delivery_type', 'unknown')
+                campaign_info['status'] = campaign.get('campaign_status', '')
+                
+                # Categorize based on delivery type
+                if campaign.get('campaign_delivery_type') == 'ONE_TIME':
+                    campaign_info['category'] = 'promotional'
+                elif campaign.get('campaign_delivery_type') == 'EVENT_TRIGGERED':
+                    campaign_info['category'] = 'transactional'
+                else:
+                    campaign_info['category'] = 'unknown'
                 
                 all_campaigns.append(campaign_info)
             
             # Check max pages limit
-            if max_pages and pages_fetched >= max_pages:
-                print(f"⚠️  Reached max pages limit: {max_pages}/{total_pages}")
+            if max_pages and page >= max_pages:
+                print(f"⚠️  Reached max pages limit: {page}")
                 print(f"✅ Fetched {len(all_campaigns)} campaigns (partial data)")
                 return all_campaigns
             
-            # Check if there are more pages
-            if current_page >= total_pages:
+            # If we got less than limit, we're done
+            if len(campaigns) < limit:
                 break
             
-            offset += limit
+            page += 1
             time.sleep(0.5)  # Small delay between requests
         
         print(f"✅ Fetched {len(all_campaigns)} campaigns")
         return all_campaigns
+    
+    def fetch_campaign_stats_by_id(self, campaign_id: str, start_date: str, end_date: str, timeout: int = 30) -> Dict:
+        """
+        Fetch stats for a specific campaign ID
+        
+        Args:
+            campaign_id: Campaign ID
+            start_date: Start date (YYYY-MM-DD)
+            end_date: End date (YYYY-MM-DD)
+            timeout: Request timeout
+            
+        Returns:
+            Dict with campaign stats
+        """
+        try:
+            payload = {
+                "request_id": f"stats_{campaign_id}",
+                "campaign_ids": [campaign_id],
+                "start_date": start_date,
+                "end_date": end_date,
+                "attribution_type": "VIEW_THROUGH",
+                "metric_type": "TOTAL"
+            }
+            
+            response = requests.post(
+                self.stats_api_url,
+                json=payload,
+                headers=self._get_headers(),
+                timeout=timeout
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                campaign_data = data.get('data', {})
+                
+                if campaign_id in campaign_data:
+                    return self._parse_campaign_stats(campaign_id, campaign_data[campaign_id])
+                else:
+                    return {
+                        'campaign_id': campaign_id,
+                        'sent': 0,
+                        'delivered': 0,
+                        'open': 0,
+                        'click': 0,
+                        'unsubscribe': 0,
+                        'bounce': 0,
+                        'failed': 0
+                    }
+            else:
+                return {'error': f"Stats API Error: {response.status_code}"}
+                
+        except Exception as e:
+            return {'error': str(e)}
     
     def _parse_campaign_stats(self, campaign_id: str, campaign_stats: List[Dict]) -> Dict:
         """Parse campaign statistics from Stats API response"""
