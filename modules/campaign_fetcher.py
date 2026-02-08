@@ -211,6 +211,7 @@ class CampaignFetcher:
                         'channel': campaign.get('channel', ''),
                         'delivery_type': campaign.get('campaign_delivery_type', 'unknown'),
                         'status': campaign.get('campaign_status', ''),
+                        'campaign_start_time': campaign.get('campaign_start_time', ''),  # When campaign was sent
                         'platform': campaign.get('platform', []),
                         'tags': campaign.get('campaign_tags', [])
                     }
