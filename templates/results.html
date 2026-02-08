@@ -13,6 +13,24 @@
 <!-- UK Metrics -->
 <h2>🇬🇧 UK Metrics</h2>
 
+<div class="csv-downloads" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+    <h3 style="margin-top: 0; font-size: 1.1em;">📥 Download Campaign Data (CSV)</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+        <a href="{{ url_for('download_csv', category='uk_promotional_push') }}" class="btn btn-sm" style="background: #28a745; color: white; text-decoration: none; padding: 8px 12px; border-radius: 4px; text-align: center;">
+            📱 Promotional Push ({{ categories.uk_promotional_push|length }})
+        </a>
+        <a href="{{ url_for('download_csv', category='uk_promotional_email') }}" class="btn btn-sm" style="background: #28a745; color: white; text-decoration: none; padding: 8px 12px; border-radius: 4px; text-align: center;">
+            📧 Promotional Email ({{ categories.uk_promotional_email|length }})
+        </a>
+        <a href="{{ url_for('download_csv', category='uk_transactional_push') }}" class="btn btn-sm" style="background: #007bff; color: white; text-decoration: none; padding: 8px 12px; border-radius: 4px; text-align: center;">
+            📱 Transactional Push ({{ categories.uk_transactional_push|length }})
+        </a>
+        <a href="{{ url_for('download_csv', category='uk_transactional_email') }}" class="btn btn-sm" style="background: #007bff; color: white; text-decoration: none; padding: 8px 12px; border-radius: 4px; text-align: center;">
+            📧 Transactional Email ({{ categories.uk_transactional_email|length }})
+        </a>
+    </div>
+</div>
+
 <table class="metrics-table">
     <tr>
         <th>Metric</th>
@@ -98,6 +116,24 @@
 
 <!-- UAE Metrics -->
 <h2>🇦🇪 UAE Metrics</h2>
+
+<div class="csv-downloads" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+    <h3 style="margin-top: 0; font-size: 1.1em;">📥 Download Campaign Data (CSV)</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+        <a href="{{ url_for('download_csv', category='uae_promotional_push') }}" class="btn btn-sm" style="background: #28a745; color: white; text-decoration: none; padding: 8px 12px; border-radius: 4px; text-align: center;">
+            📱 Promotional Push ({{ categories.uae_promotional_push|length }})
+        </a>
+        <a href="{{ url_for('download_csv', category='uae_promotional_email') }}" class="btn btn-sm" style="background: #28a745; color: white; text-decoration: none; padding: 8px 12px; border-radius: 4px; text-align: center;">
+            📧 Promotional Email ({{ categories.uae_promotional_email|length }})
+        </a>
+        <a href="{{ url_for('download_csv', category='uae_transactional_push') }}" class="btn btn-sm" style="background: #007bff; color: white; text-decoration: none; padding: 8px 12px; border-radius: 4px; text-align: center;">
+            📱 Transactional Push ({{ categories.uae_transactional_push|length }})
+        </a>
+        <a href="{{ url_for('download_csv', category='uae_transactional_email') }}" class="btn btn-sm" style="background: #007bff; color: white; text-decoration: none; padding: 8px 12px; border-radius: 4px; text-align: center;">
+            📧 Transactional Email ({{ categories.uae_transactional_email|length }})
+        </a>
+    </div>
+</div>
 
 <table class="metrics-table">
     <tr>

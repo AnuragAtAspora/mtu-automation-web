@@ -2,10 +2,12 @@
 MoEngage Metrics Web Application
 Clean, modular implementation
 """
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file
 from datetime import datetime
 import json
 import os
+import csv
+import io
 
 # Import our modules
 from modules import SegmentCreator, CampaignFetcher, MetricsCalculator
@@ -202,7 +204,8 @@ def calculate_metrics():
         session['categories'] = {k: [{'campaign_id': c['campaign_id'], 
                                       'campaign_name': c.get('campaign_name', ''),
                                       'sent': c.get('sent', 0),
-                                      'delivered': c.get('delivered', 0)} 
+                                      'delivered': c.get('delivered', 0),
+                                      'click': c.get('click', 0)} 
                                      for c in v] 
                                 for k, v in categories.items()}
         
@@ -216,13 +219,85 @@ def calculate_metrics():
                              metrics=metrics,
                              campaign_data=campaign_data,
                              user_counts=user_counts,
-                             total_campaigns=len(campaigns))
+                             total_campaigns=len(campaigns),
+                             categories=session.get('categories', {}))
         
     except Exception as e:
         print(f"Error calculating metrics: {e}")
         import traceback
         traceback.print_exc()
         flash(f'Error calculating metrics: {str(e)}', 'error')
+        return redirect(url_for('index'))
+
+
+@app.route('/download-csv/<category>')
+def download_csv(category):
+    """
+    Download campaign data as CSV for a specific category
+    Categories: uk_promotional_push, uk_promotional_email, uk_transactional_push, uk_transactional_email,
+                uae_promotional_push, uae_promotional_email, uae_transactional_push, uae_transactional_email
+    """
+    try:
+        categories = session.get('categories', {})
+        start_date = session.get('start_date', '')
+        end_date = session.get('end_date', '')
+        
+        if category not in categories:
+            flash('Invalid category or session expired', 'error')
+            return redirect(url_for('index'))
+        
+        campaigns = categories[category]
+        
+        # Create CSV in memory
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        # Write header
+        writer.writerow(['Campaign Name', 'Sent Day', 'Nature', 'Total Sent', 'Total Clicks'])
+        
+        # Determine nature from category
+        if 'promotional' in category:
+            nature = 'Promotional'
+        elif 'transactional' in category:
+            nature = 'Transactional'
+        else:
+            nature = 'Unknown'
+        
+        # Write campaign data
+        for campaign in campaigns:
+            campaign_name = campaign.get('campaign_name', 'N/A')
+            sent = campaign.get('sent', 0)
+            clicks = campaign.get('click', 0)
+            
+            # Sent day - use start_date as approximation since we don't have exact sent date
+            sent_day = start_date
+            
+            writer.writerow([campaign_name, sent_day, nature, sent, clicks])
+        
+        # Prepare file for download
+        output.seek(0)
+        
+        # Create filename
+        category_name = category.replace('_', '-')
+        filename = f"{category_name}_{start_date}_to_{end_date}.csv"
+        
+        # Convert StringIO to BytesIO for send_file
+        mem = io.BytesIO()
+        mem.write(output.getvalue().encode('utf-8'))
+        mem.seek(0)
+        
+        return send_file(
+            mem,
+            mimetype='text/csv',
+            as_attachment=True,
+            download_name=filename
+        )
+        
+    except Exception as e:
+        print(f"Error generating CSV: {e}")
+        import traceback
+        traceback.print_exc()
+        flash(f'Error generating CSV: {str(e)}', 'error')
         return redirect(url_for('index'))
 
 
