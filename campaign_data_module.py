@@ -134,6 +134,7 @@ class CampaignDataFetcher:
     
     def fetch_all_campaigns(self, start_date: str, end_date: str, 
                            max_campaigns: Optional[int] = None,
+                           max_pages: Optional[int] = None,
                            fetch_meta: bool = True) -> List[Dict]:
         """
         Fetch all campaigns with pagination and optionally fetch metadata
@@ -142,6 +143,7 @@ class CampaignDataFetcher:
             start_date: Start date in YYYY-MM-DD format
             end_date: End date in YYYY-MM-DD format
             max_campaigns: Maximum number of campaigns to fetch (None = all)
+            max_pages: Maximum number of pages to fetch (None = all, recommended: 50-100 for web)
             fetch_meta: Whether to fetch campaign metadata (delivery type, etc.)
             
         Returns:
@@ -150,8 +152,11 @@ class CampaignDataFetcher:
         all_campaigns = []
         offset = 0
         limit = 10  # MoEngage API max limit
+        pages_fetched = 0
         
         print(f"Fetching campaigns from {start_date} to {end_date}...")
+        if max_pages:
+            print(f"Max pages limit: {max_pages}")
         
         while True:
             result = self.fetch_campaigns(start_date, end_date, limit, offset)
@@ -163,6 +168,7 @@ class CampaignDataFetcher:
             total_campaigns = result.get('total_campaigns', 0)
             total_pages = result.get('total_pages', 0)
             current_page = result.get('current_page', 1)
+            pages_fetched += 1
             
             print(f"Page {current_page}/{total_pages} - Total campaigns: {total_campaigns}")
             
@@ -192,6 +198,12 @@ class CampaignDataFetcher:
                 if max_campaigns and len(all_campaigns) >= max_campaigns:
                     print(f"Reached max campaigns limit: {max_campaigns}")
                     return all_campaigns
+            
+            # Check if we've reached max pages limit
+            if max_pages and pages_fetched >= max_pages:
+                print(f"⚠️  Reached max pages limit: {max_pages}/{total_pages}")
+                print(f"✅ Fetched {len(all_campaigns)} campaigns (partial data)")
+                return all_campaigns
             
             # Check if there are more pages
             if current_page >= total_pages:
