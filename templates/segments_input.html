@@ -67,7 +67,7 @@
             <!-- Hidden fields to pass data -->
             <input type="hidden" name="start_date" value="{{ start_date }}">
             <input type="hidden" name="end_date" value="{{ end_date }}">
-            <input type="hidden" name="campaign_data" value="{{ campaign_data_json }}">
+            <input type="hidden" name="segment_ids" value="{{ segment_ids|join(',') }}">
             
             <div class="grid grid-2">
                 <!-- UK Counts -->
