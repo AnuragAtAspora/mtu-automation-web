@@ -172,6 +172,33 @@ class CampaignFetcher:
                 'message': str(e)
             }
     
+    def fetch_campaign_meta_batch(self, campaign_ids: List[str], timeout: int = 30) -> Dict:
+        """
+        Fetch metadata for multiple campaigns in one call
+        
+        Args:
+            campaign_ids: List of campaign IDs
+            timeout: Request timeout
+            
+        Returns:
+            Dict mapping campaign_id to metadata
+        """
+        try:
+            # Campaign Meta API doesn't support multiple IDs in one call
+            # But we can make parallel-ish calls by reducing delays
+            results = {}
+            
+            for campaign_id in campaign_ids:
+                meta = self.fetch_campaign_meta(campaign_id, timeout=10)
+                if meta.get('success'):
+                    results[campaign_id] = meta
+            
+            return results
+                
+        except Exception as e:
+            print(f"Meta batch exception: {e}")
+            return {}
+    
     def fetch_campaign_meta(self, campaign_id: str, timeout: int = 15) -> Dict:
         """
         Fetch campaign metadata using Campaign Meta API
@@ -291,45 +318,50 @@ class CampaignFetcher:
                 print(f"No more campaigns on page {page}")
                 break
             
+            # Get all campaign IDs from this page
+            campaign_ids = list(campaign_data.keys())
+            
+            # Batch fetch metadata for all campaigns on this page
+            print(f"Fetching metadata for {len(campaign_ids)} campaigns...")
+            meta_batch = self.fetch_campaign_meta_batch(campaign_ids)
+            
             # Process each campaign
             for campaign_id, campaign_stats_list in campaign_data.items():
                 campaign_info = self._parse_campaign_stats(campaign_id, campaign_stats_list)
                 
-                # Fetch metadata to determine promotional vs transactional
-                if fetch_meta:
-                    meta = self.fetch_campaign_meta(campaign_id)
-                    if meta.get('success'):
-                        campaign_info['campaign_name'] = meta.get('campaign_name', '')
-                        campaign_info['channel'] = meta.get('channel', '')
-                        campaign_info['delivery_type'] = meta.get('delivery_type', 'unknown')
-                        campaign_info['status'] = meta.get('status', '')
-                        campaign_start_time = meta.get('campaign_start_time', '')
-                        campaign_info['campaign_start_time'] = campaign_start_time
+                # Get metadata from batch
+                meta = meta_batch.get(campaign_id, {})
+                if meta.get('success'):
+                    campaign_info['campaign_name'] = meta.get('campaign_name', '')
+                    campaign_info['channel'] = meta.get('channel', '')
+                    campaign_info['delivery_type'] = meta.get('delivery_type', 'unknown')
+                    campaign_info['status'] = meta.get('status', '')
+                    campaign_start_time = meta.get('campaign_start_time', '')
+                    campaign_info['campaign_start_time'] = campaign_start_time
+                    
+                    # Filter: Only include campaigns where start time is within date range
+                    if campaign_start_time:
+                        # Extract date from datetime string (YYYY-MM-DD)
+                        campaign_date = campaign_start_time.split('T')[0] if 'T' in campaign_start_time else campaign_start_time[:10]
                         
-                        # Filter: Only include campaigns where start time is within date range
-                        if campaign_start_time:
-                            # Extract date from datetime string (YYYY-MM-DD)
-                            campaign_date = campaign_start_time.split('T')[0] if 'T' in campaign_start_time else campaign_start_time[:10]
-                            
-                            # Check if campaign was sent within the date range
-                            if campaign_date < start_date or campaign_date > end_date:
-                                print(f"Skipping campaign {campaign_id[:8]}... - sent on {campaign_date}, outside range {start_date} to {end_date}")
-                                continue
-                        
-                        # Categorize based on delivery type
-                        if meta.get('delivery_type') == 'ONE_TIME':
-                            campaign_info['category'] = 'promotional'
-                        elif meta.get('delivery_type') == 'EVENT_TRIGGERED':
-                            campaign_info['category'] = 'transactional'
-                        else:
-                            campaign_info['category'] = 'unknown'
+                        # Check if campaign was sent within the date range
+                        if campaign_date < start_date or campaign_date > end_date:
+                            continue
+                    
+                    # Categorize based on delivery type
+                    if meta.get('delivery_type') == 'ONE_TIME':
+                        campaign_info['category'] = 'promotional'
+                    elif meta.get('delivery_type') == 'EVENT_TRIGGERED':
+                        campaign_info['category'] = 'transactional'
                     else:
-                        campaign_info['delivery_type'] = 'unknown'
                         campaign_info['category'] = 'unknown'
-                        campaign_info['campaign_name'] = ''
-                        campaign_info['channel'] = ''
-                        campaign_info['status'] = ''
-                        campaign_info['campaign_start_time'] = ''
+                else:
+                    campaign_info['delivery_type'] = 'unknown'
+                    campaign_info['category'] = 'unknown'
+                    campaign_info['campaign_name'] = ''
+                    campaign_info['channel'] = ''
+                    campaign_info['status'] = ''
+                    campaign_info['campaign_start_time'] = ''
                 
                 all_campaigns.append(campaign_info)
             
@@ -346,7 +378,7 @@ class CampaignFetcher:
             
             offset += limit
             page += 1
-            time.sleep(0.5)  # Small delay between requests
+            time.sleep(0.2)  # Reduced delay between requests
         
         print(f"✅ Fetched {len(all_campaigns)} campaigns")
         return all_campaigns
@@ -374,8 +406,6 @@ class CampaignFetcher:
                 "metric_type": "TOTAL"
             }
             
-            print(f"Fetching stats for {len(campaign_ids[:10])} campaigns: {campaign_ids[:10][:3]}...")  # Show first 3 IDs
-            
             response = requests.post(
                 self.stats_api_url,
                 json=payload,
@@ -383,27 +413,15 @@ class CampaignFetcher:
                 timeout=timeout
             )
             
-            print(f"Stats API batch response: {response.status_code}")
-            
             if response.status_code == 200:
                 data = response.json()
                 campaign_data = data.get('data', {})
                 
-                print(f"Stats API returned data for {len(campaign_data)} campaigns")
-                
-                # Debug: Check which campaigns have no data
-                missing_campaigns = [cid for cid in campaign_ids if cid not in campaign_data]
-                if missing_campaigns:
-                    print(f"⚠️  No stats data for {len(missing_campaigns)} campaigns: {missing_campaigns[:3]}")
-                
                 result = {}
                 for campaign_id in campaign_ids:
                     if campaign_id in campaign_data:
-                        parsed = self._parse_campaign_stats(campaign_id, campaign_data[campaign_id])
-                        print(f"Campaign {campaign_id[:8]}... - sent: {parsed.get('sent', 0)}, clicks: {parsed.get('click', 0)}")
-                        result[campaign_id] = parsed
+                        result[campaign_id] = self._parse_campaign_stats(campaign_id, campaign_data[campaign_id])
                     else:
-                        print(f"Campaign {campaign_id[:8]}... - NO DATA from Stats API")
                         result[campaign_id] = {
                             'campaign_id': campaign_id,
                             'sent': 0,
@@ -418,8 +436,6 @@ class CampaignFetcher:
                 return result
             else:
                 print(f"Stats API batch error: {response.status_code}")
-                print(f"Response: {response.text[:500]}")
-                # Return empty stats for all campaigns
                 return {cid: {
                     'campaign_id': cid,
                     'sent': 0,
@@ -501,7 +517,6 @@ class CampaignFetcher:
         """Parse campaign statistics from Stats API response"""
         
         if not campaign_stats or len(campaign_stats) == 0:
-            print(f"⚠️  Campaign {campaign_id[:8]}... - Empty stats list")
             return {
                 'campaign_id': campaign_id,
                 'error': 'No stats available'
@@ -509,9 +524,6 @@ class CampaignFetcher:
         
         # Get the campaign data - Stats API returns nested structure
         campaign = campaign_stats[0]
-        
-        # Debug: Show structure
-        print(f"Campaign {campaign_id[:8]}... structure keys: {list(campaign.keys())}")
         
         # Initialize totals
         sent = 0
@@ -526,11 +538,8 @@ class CampaignFetcher:
         # We need to aggregate across platforms but NOT double-count locales/variations
         platforms = campaign.get('platforms', {})
         
-        print(f"Campaign {campaign_id[:8]}... has platforms: {list(platforms.keys())}")
-        
         for platform_name, platform_data in platforms.items():
             locales = platform_data.get('locales', {})
-            print(f"  Platform {platform_name} has locales: {list(locales.keys())}")
             
             # Only use 'all_locales' to avoid double counting
             all_locales = locales.get('all_locales', {})
@@ -538,8 +547,6 @@ class CampaignFetcher:
                 variations = all_locales.get('variations', {})
                 all_variations = variations.get('all_variations', {})
                 perf_stats = all_variations.get('performance_stats', {})
-                
-                print(f"    all_locales perf_stats: sent={perf_stats.get('sent', 0)}, click={perf_stats.get('click', 0)}")
                 
                 # Aggregate stats across platforms
                 sent += perf_stats.get('sent', 0)
@@ -549,8 +556,6 @@ class CampaignFetcher:
                 unsubscribe += perf_stats.get('unsubscribe', 0)
                 bounce += perf_stats.get('bounced', 0)
                 failed += perf_stats.get('failed', 0)
-            else:
-                print(f"    No all_locales found for platform {platform_name}")
         
         return {
             'campaign_id': campaign_id,
