@@ -8,6 +8,7 @@ import json
 import os
 import csv
 import io
+import pickle
 
 # Import our modules
 from modules import SegmentCreator, CampaignFetcher, MetricsCalculator
@@ -16,6 +17,9 @@ import config
 app = Flask(__name__)
 app.secret_key = config.SECRET_KEY
 app.permanent_session_lifetime = timedelta(hours=2)  # Session lasts 2 hours
+
+# Server-side storage for campaign data (to avoid large session cookies)
+campaign_cache = {}
 
 # Make datetime available in templates
 @app.context_processor
@@ -204,17 +208,28 @@ def calculate_metrics():
         # Calculate metrics
         metrics = MetricsCalculator.calculate_metrics(campaign_data, user_counts)
         
-        # Store in session for potential CSV export
-        session['campaign_data'] = campaign_data
-        session['user_counts'] = user_counts
-        session['metrics'] = metrics
-        session['categories'] = {k: [{'campaign_id': c['campaign_id'], 
-                                      'campaign_name': c.get('campaign_name', ''),
-                                      'sent': c.get('sent', 0),
-                                      'delivered': c.get('delivered', 0),
-                                      'click': c.get('click', 0)} 
-                                     for c in v] 
-                                for k, v in categories.items()}
+        # Generate unique session ID
+        import uuid
+        session_id = str(uuid.uuid4())
+        
+        # Store data in server-side cache instead of session
+        campaign_cache[session_id] = {
+            'campaign_data': campaign_data,
+            'user_counts': user_counts,
+            'metrics': metrics,
+            'categories': {k: [{'campaign_id': c['campaign_id'], 
+                              'campaign_name': c.get('campaign_name', ''),
+                              'sent': c.get('sent', 0),
+                              'delivered': c.get('delivered', 0),
+                              'click': c.get('click', 0)} 
+                             for c in v] 
+                            for k, v in categories.items()},
+            'start_date': start_date,
+            'end_date': end_date
+        }
+        
+        # Store only session ID in session
+        session['session_id'] = session_id
         
         print(f"\n{'='*60}")
         print(f"METRICS CALCULATED SUCCESSFULLY")
@@ -227,7 +242,7 @@ def calculate_metrics():
                              campaign_data=campaign_data,
                              user_counts=user_counts,
                              total_campaigns=len(campaigns),
-                             categories=session.get('categories', {}))
+                             categories=categories)
         
     except Exception as e:
         print(f"Error calculating metrics: {e}")
@@ -245,12 +260,21 @@ def download_csv(category):
                 uae_promotional_push, uae_promotional_email, uae_transactional_push, uae_transactional_email
     """
     try:
-        categories = session.get('categories', {})
-        start_date = session.get('start_date', '')
-        end_date = session.get('end_date', '')
+        # Get session ID
+        session_id = session.get('session_id')
+        
+        if not session_id or session_id not in campaign_cache:
+            flash('Session expired. Please calculate metrics again.', 'error')
+            return redirect(url_for('index'))
+        
+        # Get data from cache
+        cached_data = campaign_cache[session_id]
+        categories = cached_data['categories']
+        start_date = cached_data['start_date']
+        end_date = cached_data['end_date']
         
         if category not in categories:
-            flash('Invalid category or session expired', 'error')
+            flash('Invalid category', 'error')
             return redirect(url_for('index'))
         
         campaigns = categories[category]
