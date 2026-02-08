@@ -14,8 +14,8 @@ class CampaignFetcher:
         self.workspace_id = workspace_id
         self.campaign_api_key = campaign_api_key
         self.data_center = data_center
-        # Use Campaign Search API instead of Stats API
-        self.stats_api_url = f"https://api-{data_center}.moengage.com/v1/campaigns/search"
+        # Try core-services path for campaign search
+        self.stats_api_url = f"https://api-{data_center}.moengage.com/core-services/v1/campaigns/search"
         self.meta_api_url = f"https://api-{data_center}.moengage.com/core-services/v1/campaigns/meta"
         
     def _get_headers(self) -> Dict:
