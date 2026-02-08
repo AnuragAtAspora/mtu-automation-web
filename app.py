@@ -163,8 +163,11 @@ def calculate_metrics():
             fetch_meta=True
         )
         
+        print(f"Fetched {len(campaigns)} campaigns")
+        
         if not campaigns:
-            flash('No campaigns found for the selected period', 'warning')
+            print("ERROR: No campaigns returned from API")
+            flash('No campaigns found for the selected period. Please check the date range or try again later.', 'warning')
             return redirect(url_for('index'))
         
         # Group campaigns by category

@@ -59,11 +59,18 @@ class CampaignFetcher:
                 timeout=timeout
             )
             
+            print(f"Stats API Response: {response.status_code}")
+            
             if response.status_code == 200:
-                return response.json()
+                data = response.json()
+                print(f"Stats API returned data with keys: {list(data.keys()) if isinstance(data, dict) else 'not a dict'}")
+                return data
             else:
+                error_msg = f"Stats API Error: {response.status_code}"
+                print(f"❌ {error_msg}")
+                print(f"   Response: {response.text[:500]}")
                 return {
-                    'error': f"Stats API Error: {response.status_code}",
+                    'error': error_msg,
                     'message': response.text[:200]
                 }
                 
@@ -165,8 +172,20 @@ class CampaignFetcher:
             result = self.fetch_campaign_stats(start_date, end_date, limit, offset)
             
             if 'error' in result:
-                print(f"Error: {result['error']} - {result.get('message', '')}")
-                break
+                print(f"❌ Error fetching campaigns: {result['error']}")
+                print(f"   Message: {result.get('message', 'No message')}")
+                # Return what we have so far instead of breaking with nothing
+                if all_campaigns:
+                    print(f"⚠️  Returning {len(all_campaigns)} campaigns fetched before error")
+                    return all_campaigns
+                else:
+                    print(f"⚠️  No campaigns fetched, returning empty list")
+                    return []
+            
+            # Check if response has the expected structure
+            if 'data' not in result:
+                print(f"❌ Unexpected API response structure: {list(result.keys())}")
+                return all_campaigns
             
             total_campaigns = result.get('total_campaigns', 0)
             total_pages = result.get('total_pages', 0)
