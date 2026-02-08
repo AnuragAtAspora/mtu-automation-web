@@ -302,7 +302,18 @@ class CampaignFetcher:
                         campaign_info['channel'] = meta.get('channel', '')
                         campaign_info['delivery_type'] = meta.get('delivery_type', 'unknown')
                         campaign_info['status'] = meta.get('status', '')
-                        campaign_info['campaign_start_time'] = meta.get('campaign_start_time', '')
+                        campaign_start_time = meta.get('campaign_start_time', '')
+                        campaign_info['campaign_start_time'] = campaign_start_time
+                        
+                        # Filter: Only include campaigns where start time is within date range
+                        if campaign_start_time:
+                            # Extract date from datetime string (YYYY-MM-DD)
+                            campaign_date = campaign_start_time.split('T')[0] if 'T' in campaign_start_time else campaign_start_time[:10]
+                            
+                            # Check if campaign was sent within the date range
+                            if campaign_date < start_date or campaign_date > end_date:
+                                print(f"Skipping campaign {campaign_id[:8]}... - sent on {campaign_date}, outside range {start_date} to {end_date}")
+                                continue
                         
                         # Categorize based on delivery type
                         if meta.get('delivery_type') == 'ONE_TIME':
