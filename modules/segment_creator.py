@@ -536,18 +536,19 @@ class SegmentCreator:
             "filter_operator": "and",
             "filters": [
                 {
-                    "filter_type": "user_attributes",
-                    "name": "country",
                     "data_type": "string",
-                    "operator": "in",
+                    "category": "Tracked Custom Attribute",
+                    "name": "country",
                     "value": [country_code],
-                    "negate": False,
-                    "case_sensitive": False
+                    "filter_type": "user_attributes",
+                    "case_sensitive": False,
+                    "operator": "in",
+                    "negate": False
                 },
                 {
-                    "filter_type": "actions",
-                    "action_name": "MOE_PUSH_UNSUBSCRIBED",
+                    "action_name": "MOE_PUSH_PERMISSION_STATE_BLOCKED",
                     "executed": True,
+                    "filter_type": "actions",
                     "execution": {"count": 1, "type": "atleast"},
                     "primary_time_range": {
                         "type": "between",
@@ -567,18 +568,19 @@ class SegmentCreator:
             "filter_operator": "and",
             "filters": [
                 {
-                    "filter_type": "user_attributes",
-                    "name": "country",
                     "data_type": "string",
-                    "operator": "in",
+                    "category": "Tracked Custom Attribute",
+                    "name": "country",
                     "value": [country_code],
-                    "negate": False,
-                    "case_sensitive": False
+                    "filter_type": "user_attributes",
+                    "case_sensitive": False,
+                    "operator": "in",
+                    "negate": False
                 },
                 {
-                    "filter_type": "actions",
-                    "action_name": "MOE_EMAIL_UNSUBSCRIBED",
+                    "action_name": "MOE_EMAIL_UNSUBSCRIBE",
                     "executed": True,
+                    "filter_type": "actions",
                     "execution": {"count": 1, "type": "atleast"},
                     "primary_time_range": {
                         "type": "between",
