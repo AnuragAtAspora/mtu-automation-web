@@ -9,6 +9,7 @@ import os
 import csv
 import io
 import pickle
+import tempfile
 
 # Import our modules
 from modules import SegmentCreator, CampaignFetcher, MetricsCalculator
@@ -18,8 +19,23 @@ app = Flask(__name__)
 app.secret_key = config.SECRET_KEY
 app.permanent_session_lifetime = timedelta(hours=2)  # Session lasts 2 hours
 
-# Server-side storage for campaign data (to avoid large session cookies)
-campaign_cache = {}
+# Use temp directory for cache storage (persists across requests)
+CACHE_DIR = os.path.join(tempfile.gettempdir(), 'moengage_cache')
+os.makedirs(CACHE_DIR, exist_ok=True)
+
+def save_to_cache(session_id, data):
+    """Save data to file-based cache"""
+    cache_file = os.path.join(CACHE_DIR, f"{session_id}.pkl")
+    with open(cache_file, 'wb') as f:
+        pickle.dump(data, f)
+
+def load_from_cache(session_id):
+    """Load data from file-based cache"""
+    cache_file = os.path.join(CACHE_DIR, f"{session_id}.pkl")
+    if not os.path.exists(cache_file):
+        return None
+    with open(cache_file, 'rb') as f:
+        return pickle.load(f)
 
 # Make datetime available in templates
 @app.context_processor
@@ -212,8 +228,8 @@ def calculate_metrics():
         import uuid
         session_id = str(uuid.uuid4())
         
-        # Store data in server-side cache instead of session
-        campaign_cache[session_id] = {
+        # Store data in file-based cache instead of memory
+        cache_data = {
             'campaign_data': campaign_data,
             'user_counts': user_counts,
             'metrics': metrics,
@@ -227,6 +243,8 @@ def calculate_metrics():
             'start_date': start_date,
             'end_date': end_date
         }
+        
+        save_to_cache(session_id, cache_data)
         
         # Store only session ID in session
         session['session_id'] = session_id
@@ -263,12 +281,17 @@ def download_csv(category):
         # Get session ID
         session_id = session.get('session_id')
         
-        if not session_id or session_id not in campaign_cache:
+        if not session_id:
             flash('Session expired. Please calculate metrics again.', 'error')
             return redirect(url_for('index'))
         
         # Get data from cache
-        cached_data = campaign_cache[session_id]
+        cached_data = load_from_cache(session_id)
+        
+        if not cached_data:
+            flash('Session expired. Please calculate metrics again.', 'error')
+            return redirect(url_for('index'))
+        
         categories = cached_data['categories']
         start_date = cached_data['start_date']
         end_date = cached_data['end_date']
