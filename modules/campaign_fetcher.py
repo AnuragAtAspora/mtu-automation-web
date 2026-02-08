@@ -334,6 +334,7 @@ class CampaignFetcher:
             # Check max pages limit
             if max_pages and page >= max_pages:
                 print(f"⚠️  Reached max pages limit: {page}")
+                print(f"⚠️  WARNING: Only fetched {len(all_campaigns)} campaigns. There may be more campaigns in this period.")
                 print(f"✅ Fetched {len(all_campaigns)} campaigns (partial data)")
                 return all_campaigns
             

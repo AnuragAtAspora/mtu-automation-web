@@ -170,6 +170,10 @@ def calculate_metrics():
             flash('No campaigns found for the selected period. Please check the date range or try again later.', 'warning')
             return redirect(url_for('index'))
         
+        # Check if we hit the limit
+        if len(campaigns) >= (config.MAX_CAMPAIGN_PAGES * 15):
+            flash(f'Warning: Fetched {len(campaigns)} campaigns (limit reached). There may be more campaigns in this period. Consider using a shorter date range for complete data.', 'warning')
+        
         # Group campaigns by category
         categories = campaign_fetcher.group_campaigns_by_category(campaigns)
         
