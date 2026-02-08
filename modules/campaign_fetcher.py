@@ -318,6 +318,7 @@ class CampaignFetcher:
                     campaign_info['channel'] = campaign.get('channel', '')
                     campaign_info['delivery_type'] = campaign.get('campaign_delivery_type', 'unknown')
                     campaign_info['status'] = campaign.get('campaign_status', '')
+                    campaign_info['campaign_start_time'] = campaign.get('campaign_start_time', '')  # Add start time
                     
                     # Categorize based on delivery type
                     if campaign.get('campaign_delivery_type') == 'ONE_TIME':
@@ -501,17 +502,20 @@ class CampaignFetcher:
         failed = 0
         
         # Stats API has nested structure: platforms -> locales -> variations -> performance_stats
+        # We need to aggregate across platforms but NOT double-count locales/variations
         platforms = campaign.get('platforms', {})
         
         for platform_name, platform_data in platforms.items():
             locales = platform_data.get('locales', {})
             
-            for locale_name, locale_data in locales.items():
-                variations = locale_data.get('variations', {})
+            # Only use 'all_locales' to avoid double counting
+            all_locales = locales.get('all_locales', {})
+            if all_locales:
+                variations = all_locales.get('variations', {})
                 all_variations = variations.get('all_variations', {})
                 perf_stats = all_variations.get('performance_stats', {})
                 
-                # Aggregate stats
+                # Aggregate stats across platforms
                 sent += perf_stats.get('sent', 0)
                 delivered += perf_stats.get('delivered', 0)
                 opened += perf_stats.get('opened', 0)

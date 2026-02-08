@@ -235,6 +235,7 @@ def calculate_metrics():
             'metrics': metrics,
             'categories': {k: [{'campaign_id': c['campaign_id'], 
                               'campaign_name': c.get('campaign_name', ''),
+                              'campaign_start_time': c.get('campaign_start_time', ''),
                               'sent': c.get('sent', 0),
                               'delivered': c.get('delivered', 0),
                               'click': c.get('click', 0)} 
@@ -323,8 +324,13 @@ def download_csv(category):
             sent = campaign.get('sent', 0)
             clicks = campaign.get('click', 0)
             
-            # Sent day - use start_date as approximation since we don't have exact sent date
-            sent_day = start_date
+            # Sent day - use campaign_start_time if available, otherwise use start_date
+            campaign_start_time = campaign.get('campaign_start_time', '')
+            if campaign_start_time:
+                # Extract just the date part (YYYY-MM-DD) from datetime string
+                sent_day = campaign_start_time.split('T')[0] if 'T' in campaign_start_time else campaign_start_time[:10]
+            else:
+                sent_day = start_date
             
             writer.writerow([campaign_name, sent_day, nature, sent, clicks])
         
