@@ -14,8 +14,8 @@ class CampaignFetcher:
         self.workspace_id = workspace_id
         self.campaign_api_key = campaign_api_key
         self.data_center = data_center
-        # Try core-services path for campaign search
-        self.stats_api_url = f"https://api-{data_center}.moengage.com/core-services/v1/campaigns/search"
+        # Stats API endpoint
+        self.stats_api_url = f"https://api-{data_center}.moengage.com/core-services/v1/campaign-stats"
         self.meta_api_url = f"https://api-{data_center}.moengage.com/core-services/v1/campaigns/meta"
         
     def _get_headers(self) -> Dict:
@@ -33,7 +33,7 @@ class CampaignFetcher:
     def fetch_campaign_stats(self, start_date: str, end_date: str, 
                             limit: int = 10, offset: int = 0, timeout: int = 30) -> Dict:
         """
-        Fetch campaign statistics using Campaign Search API
+        Fetch campaign statistics using Stats API
         
         Args:
             start_date: Start date (YYYY-MM-DD)
@@ -46,15 +46,15 @@ class CampaignFetcher:
             Dict with campaign stats or error
         """
         try:
-            # Campaign Search API payload - use filters instead of campaign_fields
+            # Stats API payload
             payload = {
-                "request_id": f"search_{int(time.time())}",
-                "page": (offset // limit) + 1,
+                "request_id": f"stats_{int(time.time())}",
+                "start_date": start_date,
+                "end_date": end_date,
+                "attribution_type": "VIEW_THROUGH",
+                "metric_type": "TOTAL",
                 "limit": limit,
-                "filters": {
-                    "from_date": start_date,
-                    "to_date": end_date
-                }
+                "offset": offset
             }
             
             response = requests.post(
@@ -64,42 +64,28 @@ class CampaignFetcher:
                 timeout=timeout
             )
             
-            print(f"Campaign Search API Response: {response.status_code}")
+            print(f"Stats API Response: {response.status_code}")
             
             if response.status_code == 200:
                 data = response.json()
-                print(f"Campaign Search API returned data with keys: {list(data.keys()) if isinstance(data, dict) else 'not a dict'}")
+                print(f"Stats API returned data with keys: {list(data.keys()) if isinstance(data, dict) else 'not a dict'}")
                 
-                # Campaign Search API returns array of campaigns
-                if isinstance(data, list):
-                    campaigns = data
-                    total = len(campaigns)
-                else:
-                    campaigns = data.get('campaigns', data.get('data', []))
-                    total = data.get('total', len(campaigns))
+                # Stats API returns data with campaign_id as keys
+                campaign_data = data.get('data', {})
+                total_campaigns = data.get('total_campaigns', len(campaign_data))
+                current_page = data.get('current_page', (offset // limit) + 1)
+                total_pages = data.get('total_pages', max(1, (total_campaigns + limit - 1) // limit))
                 
-                # Calculate pagination info
-                current_page = (offset // limit) + 1
-                total_pages = max(1, (total + limit - 1) // limit)
-                
-                # Transform to expected format with campaign_id as key
-                campaign_dict = {}
-                for campaign in campaigns:
-                    campaign_id = campaign.get('campaign_id', campaign.get('id'))
-                    if campaign_id:
-                        # Wrap in list to match expected format
-                        campaign_dict[campaign_id] = [campaign]
-                
-                print(f"Processed {len(campaign_dict)} campaigns from response")
+                print(f"Processed {len(campaign_data)} campaigns from response")
                 
                 return {
-                    'data': campaign_dict,
-                    'total_campaigns': total,
+                    'data': campaign_data,
+                    'total_campaigns': total_campaigns,
                     'total_pages': total_pages,
                     'current_page': current_page
                 }
             else:
-                error_msg = f"Campaign Search API Error: {response.status_code}"
+                error_msg = f"Stats API Error: {response.status_code}"
                 print(f"❌ {error_msg}")
                 print(f"   Response: {response.text[:500]}")
                 return {
@@ -108,7 +94,7 @@ class CampaignFetcher:
                 }
                 
         except requests.exceptions.Timeout:
-            return {'error': 'Timeout', 'message': 'Campaign Search API request timed out'}
+            return {'error': 'Timeout', 'message': 'Stats API request timed out'}
         except Exception as e:
             return {'error': 'Exception', 'message': str(e)}
     
@@ -271,7 +257,7 @@ class CampaignFetcher:
         return all_campaigns
     
     def _parse_campaign_stats(self, campaign_id: str, campaign_stats: List[Dict]) -> Dict:
-        """Parse campaign statistics from Campaign Search API response"""
+        """Parse campaign statistics from Stats API response"""
         
         if not campaign_stats or len(campaign_stats) == 0:
             return {
@@ -279,21 +265,47 @@ class CampaignFetcher:
                 'error': 'No stats available'
             }
         
-        # Get the campaign data
+        # Get the campaign data - Stats API returns nested structure
         campaign = campaign_stats[0]
         
-        # Campaign Search API returns stats directly in the campaign object
-        stats = campaign.get('stats', {})
+        # Initialize totals
+        sent = 0
+        delivered = 0
+        opened = 0
+        click = 0
+        unsubscribe = 0
+        bounce = 0
+        failed = 0
+        
+        # Stats API has nested structure: platforms -> locales -> variations -> performance_stats
+        platforms = campaign.get('platforms', {})
+        
+        for platform_name, platform_data in platforms.items():
+            locales = platform_data.get('locales', {})
+            
+            for locale_name, locale_data in locales.items():
+                variations = locale_data.get('variations', {})
+                all_variations = variations.get('all_variations', {})
+                perf_stats = all_variations.get('performance_stats', {})
+                
+                # Aggregate stats
+                sent += perf_stats.get('sent', 0)
+                delivered += perf_stats.get('delivered', 0)
+                opened += perf_stats.get('opened', 0)
+                click += perf_stats.get('click', 0)
+                unsubscribe += perf_stats.get('unsubscribe', 0)
+                bounce += perf_stats.get('bounced', 0)
+                failed += perf_stats.get('failed', 0)
         
         return {
             'campaign_id': campaign_id,
-            'sent': stats.get('sent', 0),
-            'delivered': stats.get('delivered', 0),
-            'open': stats.get('open', 0),
-            'click': stats.get('click', 0),
-            'unsubscribe': stats.get('unsubscribe', 0),
-            'bounce': stats.get('bounce', 0),
-            'failed': stats.get('failed', 0)
+            'sent': sent,
+            'delivered': delivered,
+            'open': opened,
+            'click': click,
+            'unsubscribe': unsubscribe,
+            'bounce': bounce,
+            'failed': failed
         }
     
     def group_campaigns_by_category(self, campaigns: List[Dict]) -> Dict:
