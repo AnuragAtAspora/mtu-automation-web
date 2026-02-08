@@ -46,19 +46,16 @@ class CampaignFetcher:
             Dict with campaign stats or error
         """
         try:
-            # Campaign Search API payload format
+            # Campaign Search API payload format - simplified
             payload = {
-                "filter": {
-                    "from": start_date,
-                    "to": end_date
-                },
-                "sort": {
-                    "type": "created_time",
-                    "order": "desc"
-                },
-                "pagination": {
-                    "limit": limit,
-                    "offset": offset
+                "request_id": f"search_{int(time.time())}",
+                "page": (offset // limit) + 1,
+                "limit": limit,
+                "campaign_fields": {
+                    "created_time": {
+                        "from": f"{start_date}T00:00:00.000Z",
+                        "to": f"{end_date}T23:59:59.999Z"
+                    }
                 }
             }
             
@@ -75,21 +72,27 @@ class CampaignFetcher:
                 data = response.json()
                 print(f"Campaign Search API returned data with keys: {list(data.keys()) if isinstance(data, dict) else 'not a dict'}")
                 
-                # Transform Campaign Search API response to match expected format
-                campaigns = data.get('campaigns', [])
-                total = data.get('total', len(campaigns))
+                # Campaign Search API returns array of campaigns
+                if isinstance(data, list):
+                    campaigns = data
+                    total = len(campaigns)
+                else:
+                    campaigns = data.get('campaigns', data.get('data', []))
+                    total = data.get('total', len(campaigns))
                 
                 # Calculate pagination info
                 current_page = (offset // limit) + 1
-                total_pages = (total + limit - 1) // limit
+                total_pages = max(1, (total + limit - 1) // limit)
                 
                 # Transform to expected format with campaign_id as key
                 campaign_dict = {}
                 for campaign in campaigns:
-                    campaign_id = campaign.get('id', campaign.get('campaign_id'))
+                    campaign_id = campaign.get('campaign_id', campaign.get('id'))
                     if campaign_id:
-                        # Wrap in list to match Stats API format
+                        # Wrap in list to match expected format
                         campaign_dict[campaign_id] = [campaign]
+                
+                print(f"Processed {len(campaign_dict)} campaigns from response")
                 
                 return {
                     'data': campaign_dict,
