@@ -49,68 +49,80 @@
         <td>{{ "{:,}".format(metrics.uk.active_users) }}</td>
     </tr>
     <tr>
-        <td><strong>Communications per User</strong></td>
+        <td>Transacted Users (Period)</td>
+        <td>{{ "{:,}".format(metrics.uk.transacted_users) }}</td>
+    </tr>
+    <tr>
+        <td><strong>1. % Receiving Comms (Total Userbase)</strong></td>
         <td></td>
     </tr>
     <tr>
-        <td>Transactional Push per Active User</td>
-        <td>{{ metrics.uk.tx_pn_per_user }}</td>
+        <td>PN</td>
+        <td>{{ metrics.uk.pct_receiving_pn_total }}%</td>
     </tr>
     <tr>
-        <td>Transactional Email per Active User</td>
-        <td>{{ metrics.uk.tx_email_per_user }}</td>
+        <td>Email</td>
+        <td>{{ metrics.uk.pct_receiving_email_total }}%</td>
     </tr>
     <tr>
-        <td>Promotional Push per Total User</td>
-        <td>{{ metrics.uk.pr_pn_per_user }}</td>
-    </tr>
-    <tr>
-        <td>Promotional Email per Total User</td>
-        <td>{{ metrics.uk.pr_email_per_user }}</td>
-    </tr>
-    <tr>
-        <td><strong>MTU (Monthly Transacting Users)</strong></td>
+        <td><strong>2. Unsubscribe Rate</strong></td>
         <td></td>
     </tr>
     <tr>
-        <td>Push MTU %</td>
-        <td>{{ metrics.uk.push_mtu }}%</td>
+        <td>PN</td>
+        <td>{{ metrics.uk.unsub_rate_pn }}%</td>
     </tr>
     <tr>
-        <td>Email MTU %</td>
-        <td>{{ metrics.uk.email_mtu }}%</td>
+        <td>Email</td>
+        <td>{{ metrics.uk.unsub_rate_email }}%</td>
     </tr>
     <tr>
-        <td><strong>Delivery & Engagement</strong></td>
+        <td><strong>3. % Receiving Comms (Active Userbase)</strong></td>
         <td></td>
     </tr>
     <tr>
-        <td>Push Delivery Rate</td>
-        <td>{{ metrics.uk.push_delivery_rate }}%</td>
+        <td>PN</td>
+        <td>{{ metrics.uk.pct_receiving_pn_active }}%</td>
     </tr>
     <tr>
-        <td>Email Delivery Rate</td>
-        <td>{{ metrics.uk.email_delivery_rate }}%</td>
+        <td>Email</td>
+        <td>{{ metrics.uk.pct_receiving_email_active }}%</td>
     </tr>
     <tr>
-        <td>Push CTR</td>
-        <td>{{ metrics.uk.push_ctr }}%</td>
+        <td><strong>4. No. of Comms Received per User</strong></td>
+        <td></td>
     </tr>
     <tr>
-        <td>Email Open Rate</td>
+        <td>Transactional PN</td>
+        <td>{{ metrics.uk.comms_per_user_tx_pn }}</td>
+    </tr>
+    <tr>
+        <td>Transactional Email</td>
+        <td>{{ metrics.uk.comms_per_user_tx_email }}</td>
+    </tr>
+    <tr>
+        <td>Promotional PN</td>
+        <td>{{ metrics.uk.comms_per_user_pr_pn }}</td>
+    </tr>
+    <tr>
+        <td>Promotional Email</td>
+        <td>{{ metrics.uk.comms_per_user_pr_email }}</td>
+    </tr>
+    <tr>
+        <td><strong>5. PN CTR</strong></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Click-Through Rate</td>
+        <td>{{ metrics.uk.pn_ctr }}%</td>
+    </tr>
+    <tr>
+        <td><strong>6. Email Open Rate</strong></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Open Rate</td>
         <td>{{ metrics.uk.email_open_rate }}%</td>
-    </tr>
-    <tr>
-        <td><strong>Unsubscribe Rates</strong></td>
-        <td></td>
-    </tr>
-    <tr>
-        <td>Push Unsubscribe Rate</td>
-        <td>{{ metrics.uk.push_unsub_rate }}%</td>
-    </tr>
-    <tr>
-        <td>Email Unsubscribe Rate</td>
-        <td>{{ metrics.uk.email_unsub_rate }}%</td>
     </tr>
 </table>
 
@@ -153,68 +165,80 @@
         <td>{{ "{:,}".format(metrics.uae.active_users) }}</td>
     </tr>
     <tr>
-        <td><strong>Communications per User</strong></td>
+        <td>Transacted Users (Period)</td>
+        <td>{{ "{:,}".format(metrics.uae.transacted_users) }}</td>
+    </tr>
+    <tr>
+        <td><strong>1. % Receiving Comms (Total Userbase)</strong></td>
         <td></td>
     </tr>
     <tr>
-        <td>Transactional Push per Active User</td>
-        <td>{{ metrics.uae.tx_pn_per_user }}</td>
+        <td>PN</td>
+        <td>{{ metrics.uae.pct_receiving_pn_total }}%</td>
     </tr>
     <tr>
-        <td>Transactional Email per Active User</td>
-        <td>{{ metrics.uae.tx_email_per_user }}</td>
+        <td>Email</td>
+        <td>{{ metrics.uae.pct_receiving_email_total }}%</td>
     </tr>
     <tr>
-        <td>Promotional Push per Total User</td>
-        <td>{{ metrics.uae.pr_pn_per_user }}</td>
-    </tr>
-    <tr>
-        <td>Promotional Email per Total User</td>
-        <td>{{ metrics.uae.pr_email_per_user }}</td>
-    </tr>
-    <tr>
-        <td><strong>MTU (Monthly Transacting Users)</strong></td>
+        <td><strong>2. Unsubscribe Rate</strong></td>
         <td></td>
     </tr>
     <tr>
-        <td>Push MTU %</td>
-        <td>{{ metrics.uae.push_mtu }}%</td>
+        <td>PN</td>
+        <td>{{ metrics.uae.unsub_rate_pn }}%</td>
     </tr>
     <tr>
-        <td>Email MTU %</td>
-        <td>{{ metrics.uae.email_mtu }}%</td>
+        <td>Email</td>
+        <td>{{ metrics.uae.unsub_rate_email }}%</td>
     </tr>
     <tr>
-        <td><strong>Delivery & Engagement</strong></td>
+        <td><strong>3. % Receiving Comms (Active Userbase)</strong></td>
         <td></td>
     </tr>
     <tr>
-        <td>Push Delivery Rate</td>
-        <td>{{ metrics.uae.push_delivery_rate }}%</td>
+        <td>PN</td>
+        <td>{{ metrics.uae.pct_receiving_pn_active }}%</td>
     </tr>
     <tr>
-        <td>Email Delivery Rate</td>
-        <td>{{ metrics.uae.email_delivery_rate }}%</td>
+        <td>Email</td>
+        <td>{{ metrics.uae.pct_receiving_email_active }}%</td>
     </tr>
     <tr>
-        <td>Push CTR</td>
-        <td>{{ metrics.uae.push_ctr }}%</td>
+        <td><strong>4. No. of Comms Received per User</strong></td>
+        <td></td>
     </tr>
     <tr>
-        <td>Email Open Rate</td>
+        <td>Transactional PN</td>
+        <td>{{ metrics.uae.comms_per_user_tx_pn }}</td>
+    </tr>
+    <tr>
+        <td>Transactional Email</td>
+        <td>{{ metrics.uae.comms_per_user_tx_email }}</td>
+    </tr>
+    <tr>
+        <td>Promotional PN</td>
+        <td>{{ metrics.uae.comms_per_user_pr_pn }}</td>
+    </tr>
+    <tr>
+        <td>Promotional Email</td>
+        <td>{{ metrics.uae.comms_per_user_pr_email }}</td>
+    </tr>
+    <tr>
+        <td><strong>5. PN CTR</strong></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Click-Through Rate</td>
+        <td>{{ metrics.uae.pn_ctr }}%</td>
+    </tr>
+    <tr>
+        <td><strong>6. Email Open Rate</strong></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Open Rate</td>
         <td>{{ metrics.uae.email_open_rate }}%</td>
-    </tr>
-    <tr>
-        <td><strong>Unsubscribe Rates</strong></td>
-        <td></td>
-    </tr>
-    <tr>
-        <td>Push Unsubscribe Rate</td>
-        <td>{{ metrics.uae.push_unsub_rate }}%</td>
-    </tr>
-    <tr>
-        <td>Email Unsubscribe Rate</td>
-        <td>{{ metrics.uae.email_unsub_rate }}%</td>
     </tr>
 </table>
 

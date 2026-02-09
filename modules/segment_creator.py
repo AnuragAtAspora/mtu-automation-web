@@ -94,7 +94,7 @@ class SegmentCreator:
     
     def create_metrics_segments(self, start_date: str, end_date: str, rate_limit_delay: float = 1.0) -> Dict:
         """
-        Create all 16 segments needed for metrics calculation
+        Create all 18 segments needed for metrics calculation
         
         Args:
             start_date: Start date (YYYY-MM-DD)
@@ -108,7 +108,7 @@ class SegmentCreator:
         created_segments = []
         failed_segments = []
         
-        # Define all 16 segments
+        # Define all 18 segments (16 original + 2 transacted users)
         segment_definitions = self._get_segment_definitions(start_date, end_date, timestamp)
         
         print(f"Creating {len(segment_definitions)} segments...")
@@ -212,6 +212,13 @@ class SegmentCreator:
                 'field_name': 'uk_email_unsubscribed',
                 'description': 'UK users who unsubscribed from email',
                 'filters': self._filter_unsubscribed_email('GB', start_date, end_date)
+            },
+            {
+                'name': f'UK_Transacted_Users_{timestamp}',
+                'display_name': 'UK - Transacted Users (Period)',
+                'field_name': 'uk_transacted_users',
+                'description': 'UK users who transacted in the selected period',
+                'filters': self._filter_transacted_users('GB', start_date, end_date)
             }
         ]
         
@@ -590,6 +597,59 @@ class SegmentCreator:
                         "period_unit": "days"
                     },
                     "attributes": {"filter_operator": "and", "filters": []}
+                }
+            ]
+        }
+    
+    def _filter_transacted_users(self, country_code: str, start_date: str, end_date: str) -> Dict:
+        """Filter for users who transacted in the selected period"""
+        return {
+            "filter_operator": "and",
+            "filters": [
+                {
+                    "filter_type": "user_attributes",
+                    "name": "country",
+                    "data_type": "string",
+                    "operator": "in",
+                    "value": [country_code],
+                    "negate": False,
+                    "case_sensitive": False
+                },
+                {
+                    "filter_type": "actions",
+                    "action_name": "ORDER",
+                    "executed": True,
+                    "execution": {"count": 1, "type": "atleast"},
+                    "primary_time_range": {
+                        "type": "between",
+                        "value": f"{start_date}T00:00:00.000Z",
+                        "value1": f"{end_date}T23:59:59.999Z",
+                        "value_type": "absolute",
+                        "period_unit": "days"
+                    },
+                    "attributes": {
+                        "filter_operator": "or",
+                        "filters": [
+                            {
+                                "filter_type": "event_attributes",
+                                "name": "sub_event",
+                                "data_type": "string",
+                                "operator": "in",
+                                "value": ["COMPLETED"],
+                                "negate": False,
+                                "case_sensitive": False
+                            },
+                            {
+                                "filter_type": "event_attributes",
+                                "name": "sub_event",
+                                "data_type": "string",
+                                "operator": "in",
+                                "value": ["PAYMENT_COMPLETED"],
+                                "negate": False,
+                                "case_sensitive": False
+                            }
+                        ]
+                    }
                 }
             ]
         }

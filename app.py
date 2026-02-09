@@ -287,6 +287,7 @@ def calculate_metrics():
         user_counts = {
             'uk_total_users': int(request.form.get('uk_total_users', 0)),
             'uk_active_users': int(request.form.get('uk_active_users', 0)),
+            'uk_transacted_users': int(request.form.get('uk_transacted_users', 0)),
             'uk_push_received': int(request.form.get('uk_push_received', 0)),
             'uk_email_received': int(request.form.get('uk_email_received', 0)),
             'uk_push_received_active': int(request.form.get('uk_push_received_active', 0)),
@@ -295,6 +296,7 @@ def calculate_metrics():
             'uk_email_unsubscribed': int(request.form.get('uk_email_unsubscribed', 0)),
             'uae_total_users': int(request.form.get('uae_total_users', 0)),
             'uae_active_users': int(request.form.get('uae_active_users', 0)),
+            'uae_transacted_users': int(request.form.get('uae_transacted_users', 0)),
             'uae_push_received': int(request.form.get('uae_push_received', 0)),
             'uae_email_received': int(request.form.get('uae_email_received', 0)),
             'uae_push_received_active': int(request.form.get('uae_push_received_active', 0)),
