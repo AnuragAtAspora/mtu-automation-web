@@ -115,6 +115,7 @@ def add_transactional_campaign():
             return redirect(url_for('settings'))
         
         campaign_name = meta.get('campaign_name', 'Unknown Campaign')
+        channel = meta.get('channel', 'Unknown')
         
         # Infer country from campaign name
         campaign_name_lower = campaign_name.lower()
@@ -129,6 +130,7 @@ def add_transactional_campaign():
         campaigns.append({
             'campaign_id': campaign_id,
             'campaign_name': campaign_name,
+            'channel': channel,
             'country': country
         })
         

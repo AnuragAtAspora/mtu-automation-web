@@ -425,9 +425,9 @@ class CampaignFetcher:
                 # Add metadata from config
                 campaign_info['campaign_name'] = campaign_config['campaign_name']
                 campaign_info['country'] = campaign_config['country']
+                campaign_info['channel'] = campaign_config.get('channel', '')
                 campaign_info['delivery_type'] = 'EVENT_TRIGGERED'
                 campaign_info['category'] = 'transactional'
-                campaign_info['channel'] = ''  # Will be inferred from name or set later
                 campaign_info['status'] = 'LIVE'
                 campaign_info['campaign_start_time'] = ''
                 

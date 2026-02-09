@@ -36,6 +36,7 @@
                 <tr>
                     <th>Campaign ID</th>
                     <th>Campaign Name</th>
+                    <th>Channel</th>
                     <th>Country</th>
                     <th>Action</th>
                 </tr>
@@ -45,6 +46,15 @@
                 <tr>
                     <td><code>{{ campaign.campaign_id }}</code></td>
                     <td>{{ campaign.campaign_name or 'N/A' }}</td>
+                    <td>
+                        {% if campaign.channel %}
+                        <span style="padding: 4px 8px; border-radius: 4px; background: #f0f0f0; text-transform: uppercase; font-size: 0.85em;">
+                            {{ campaign.channel }}
+                        </span>
+                        {% else %}
+                        <span style="color: #999;">N/A</span>
+                        {% endif %}
+                    </td>
                     <td>
                         {% if campaign.country %}
                         <span style="padding: 4px 8px; border-radius: 4px; background: {% if campaign.country == 'UK' %}#e3f2fd{% else %}#fff3e0{% endif %};">
