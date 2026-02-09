@@ -119,6 +119,8 @@ class CampaignFetcher:
             from_date = '-'.join(start_date.split('-')[::-1])
             to_date = '-'.join(end_date.split('-')[::-1])
             
+            print(f"Fetching campaigns with created_date: {from_date} to {to_date}")
+            
             payload = {
                 "request_id": f"meta_date_{int(time.time())}",
                 "page": page,
@@ -425,11 +427,14 @@ class CampaignFetcher:
                 # Add metadata from config
                 campaign_info['campaign_name'] = campaign_config['campaign_name']
                 campaign_info['country'] = campaign_config['country']
-                campaign_info['channel'] = campaign_config.get('channel', '')
+                campaign_info['channel'] = campaign_config.get('channel', '').upper()  # Normalize to uppercase
                 campaign_info['delivery_type'] = 'EVENT_TRIGGERED'
                 campaign_info['category'] = 'transactional'
                 campaign_info['status'] = 'LIVE'
                 campaign_info['campaign_start_time'] = ''
+                
+                # Debug: Log what we got
+                print(f"  Campaign {campaign_id[:8]}: sent={campaign_info.get('sent', 0)}, channel={campaign_info['channel']}, country={campaign_info['country']}")
                 
                 all_campaigns.append(campaign_info)
         
@@ -577,6 +582,8 @@ class CampaignFetcher:
                 "metric_type": "TOTAL"
             }
             
+            print(f"Stats API request: {len(campaign_ids[:10])} campaigns, dates: {start_date} to {end_date}")
+            
             response = requests.post(
                 self.stats_api_url,
                 json=payload,
@@ -584,15 +591,25 @@ class CampaignFetcher:
                 timeout=timeout
             )
             
+            print(f"Stats API response: {response.status_code}")
+            
             if response.status_code == 200:
                 data = response.json()
                 campaign_data = data.get('data', {})
+                
+                print(f"Stats API returned data for {len(campaign_data)} campaigns")
+                
+                # Debug: Show first campaign's structure
+                if campaign_data:
+                    first_id = list(campaign_data.keys())[0]
+                    print(f"Sample campaign {first_id[:8]} structure: {list(campaign_data[first_id][0].keys()) if campaign_data[first_id] else 'empty'}")
                 
                 result = {}
                 for campaign_id in campaign_ids:
                     if campaign_id in campaign_data:
                         result[campaign_id] = self._parse_campaign_stats(campaign_id, campaign_data[campaign_id])
                     else:
+                        print(f"  No data for campaign {campaign_id[:8]}")
                         result[campaign_id] = {
                             'campaign_id': campaign_id,
                             'sent': 0,
@@ -607,6 +624,7 @@ class CampaignFetcher:
                 return result
             else:
                 print(f"Stats API batch error: {response.status_code}")
+                print(f"Response: {response.text[:500]}")
                 return {cid: {
                     'campaign_id': cid,
                     'sent': 0,
@@ -620,6 +638,8 @@ class CampaignFetcher:
                 
         except Exception as e:
             print(f"Stats API batch exception: {e}")
+            import traceback
+            traceback.print_exc()
             return {cid: {
                 'campaign_id': cid,
                 'sent': 0,
@@ -709,6 +729,9 @@ class CampaignFetcher:
         # We need to aggregate across platforms but NOT double-count locales/variations
         platforms = campaign.get('platforms', {})
         
+        if not platforms:
+            print(f"  ⚠️  Campaign {campaign_id[:8]} has no platforms data")
+        
         for platform_name, platform_data in platforms.items():
             locales = platform_data.get('locales', {})
             
@@ -727,6 +750,8 @@ class CampaignFetcher:
                 unsubscribe += perf_stats.get('unsubscribe', 0)
                 bounce += perf_stats.get('bounced', 0)
                 failed += perf_stats.get('failed', 0)
+        
+        print(f"  Campaign {campaign_id[:8]}: sent={sent}, click={click}")
         
         return {
             'campaign_id': campaign_id,
@@ -782,7 +807,7 @@ class CampaignFetcher:
             
             # Determine channel
             is_push = channel in ['push', 'android', 'ios'] or 'push' in campaign_name or 'pn' in campaign_name
-            is_email = channel == 'email' or 'email' in campaign_name
+            is_email = channel in ['email'] or 'email' in campaign_name
             
             # Determine type
             is_promotional = category == 'promotional'
