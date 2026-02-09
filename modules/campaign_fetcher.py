@@ -740,13 +740,9 @@ class CampaignFetcher:
                 if all_variations:
                     perf_stats = all_variations.get('performance_stats', {})
                     
-                    # Debug: Show what fields are available (only once)
-                    if sent == 0:
-                        print(f"    performance_stats keys for {campaign_id[:8]}: {list(perf_stats.keys())}")
-                    
                     sent = perf_stats.get('sent', 0)
                     delivered = perf_stats.get('delivered', 0)
-                    opened = perf_stats.get('opened', 0)
+                    opened = perf_stats.get('open', 0)  # Field is 'open' not 'opened'
                     click = perf_stats.get('click', 0)
                     unsubscribe = perf_stats.get('unsubscribe', 0)
                     bounce = perf_stats.get('bounced', 0)
@@ -767,7 +763,7 @@ class CampaignFetcher:
                         # Aggregate stats across platforms
                         sent += perf_stats.get('sent', 0)
                         delivered += perf_stats.get('delivered', 0)
-                        opened += perf_stats.get('opened', 0)
+                        opened += perf_stats.get('open', 0)  # Field is 'open' not 'opened'
                         click += perf_stats.get('click', 0)
                         unsubscribe += perf_stats.get('unsubscribe', 0)
                         bounce += perf_stats.get('bounced', 0)
