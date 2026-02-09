@@ -740,6 +740,10 @@ class CampaignFetcher:
                 if all_variations:
                     perf_stats = all_variations.get('performance_stats', {})
                     
+                    # Debug: Show what fields are available (only once)
+                    if sent == 0:
+                        print(f"    performance_stats keys for {campaign_id[:8]}: {list(perf_stats.keys())}")
+                    
                     sent = perf_stats.get('sent', 0)
                     delivered = perf_stats.get('delivered', 0)
                     opened = perf_stats.get('opened', 0)
