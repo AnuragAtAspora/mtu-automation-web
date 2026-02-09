@@ -115,11 +115,8 @@ class CampaignFetcher:
             Dict with campaign list or error
         """
         try:
-            # Convert YYYY-MM-DD to DD-MM-YYYY format for Campaign Meta API
-            from_date = '-'.join(start_date.split('-')[::-1])
-            to_date = '-'.join(end_date.split('-')[::-1])
-            
-            print(f"Fetching campaigns with created_date: {from_date} to {to_date}")
+            # Campaign Meta API expects YYYY-MM-DD format (same as Stats API)
+            print(f"Fetching campaigns with created_date: {start_date} to {end_date}")
             
             payload = {
                 "request_id": f"meta_date_{int(time.time())}",
@@ -127,8 +124,8 @@ class CampaignFetcher:
                 "limit": min(limit, 15),  # Max 15 per API docs
                 "campaign_fields": {
                     "created_date": {
-                        "from_date": from_date,
-                        "to_date": to_date
+                        "from_date": start_date,
+                        "to_date": end_date
                     }
                 }
             }
