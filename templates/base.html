@@ -137,6 +137,16 @@
     </style>
 </head>
 <body>
+    <div style="background: #3498db; color: white; padding: 15px 0; margin-bottom: 20px;">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 40px; display: flex; justify-content: space-between; align-items: center;">
+            <h1 style="margin: 0; font-size: 1.5em;">📊 MoEngage Metrics</h1>
+            <nav>
+                <a href="{{ url_for('index') }}" style="color: white; text-decoration: none; margin-right: 20px;">Home</a>
+                <a href="{{ url_for('settings') }}" style="color: white; text-decoration: none;">⚙️ Settings</a>
+            </nav>
+        </div>
+    </div>
+    
     <div class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}

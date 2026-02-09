@@ -53,6 +53,101 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/settings')
+def settings():
+    """Settings page for managing transactional campaigns"""
+    try:
+        # Load transactional campaigns from JSON file
+        if os.path.exists('transactional_campaigns.json'):
+            with open('transactional_campaigns.json', 'r') as f:
+                campaigns = json.load(f)
+        else:
+            campaigns = []
+        
+        return render_template('settings.html', campaigns=campaigns)
+    except Exception as e:
+        print(f"Error loading settings: {e}")
+        flash('Error loading settings', 'error')
+        return render_template('settings.html', campaigns=[])
+
+
+@app.route('/add-transactional-campaign', methods=['POST'])
+def add_transactional_campaign():
+    """Add a new transactional campaign"""
+    try:
+        campaign_id = request.form.get('campaign_id', '').strip()
+        campaign_name = request.form.get('campaign_name', '').strip()
+        country = request.form.get('country', '').strip()
+        
+        if not campaign_id or not campaign_name or not country:
+            flash('All fields are required', 'error')
+            return redirect(url_for('settings'))
+        
+        # Load existing campaigns
+        if os.path.exists('transactional_campaigns.json'):
+            with open('transactional_campaigns.json', 'r') as f:
+                campaigns = json.load(f)
+        else:
+            campaigns = []
+        
+        # Check if campaign already exists
+        if any(c['campaign_id'] == campaign_id for c in campaigns):
+            flash('Campaign ID already exists', 'error')
+            return redirect(url_for('settings'))
+        
+        # Add new campaign
+        campaigns.append({
+            'campaign_id': campaign_id,
+            'campaign_name': campaign_name,
+            'country': country
+        })
+        
+        # Save to file
+        with open('transactional_campaigns.json', 'w') as f:
+            json.dump(campaigns, f, indent=2)
+        
+        flash(f'Campaign "{campaign_name}" added successfully', 'success')
+        return redirect(url_for('settings'))
+        
+    except Exception as e:
+        print(f"Error adding campaign: {e}")
+        flash(f'Error adding campaign: {str(e)}', 'error')
+        return redirect(url_for('settings'))
+
+
+@app.route('/delete-transactional-campaign', methods=['POST'])
+def delete_transactional_campaign():
+    """Delete a transactional campaign"""
+    try:
+        campaign_id = request.form.get('campaign_id', '').strip()
+        
+        if not campaign_id:
+            flash('Campaign ID is required', 'error')
+            return redirect(url_for('settings'))
+        
+        # Load existing campaigns
+        if os.path.exists('transactional_campaigns.json'):
+            with open('transactional_campaigns.json', 'r') as f:
+                campaigns = json.load(f)
+        else:
+            campaigns = []
+        
+        # Remove campaign
+        campaigns = [c for c in campaigns if c['campaign_id'] != campaign_id]
+        
+        # Save to file
+        with open('transactional_campaigns.json', 'w') as f:
+            json.dump(campaigns, f, indent=2)
+        
+        flash('Campaign deleted successfully', 'success')
+        return redirect(url_for('settings'))
+        
+    except Exception as e:
+        print(f"Error deleting campaign: {e}")
+        flash(f'Error deleting campaign: {str(e)}', 'error')
+        return redirect(url_for('settings'))
+
+
 @app.route('/health')
 def health():
     """Health check endpoint"""
