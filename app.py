@@ -280,23 +280,37 @@ def calculate_metrics():
             data_center=config.MOENGAGE_CONFIG['data_center']
         )
         
-        campaigns = campaign_fetcher.fetch_all_campaigns(
+        # Load transactional campaigns from config
+        transactional_list = []
+        if os.path.exists('transactional_campaigns.json'):
+            with open('transactional_campaigns.json', 'r') as f:
+                transactional_list = json.load(f)
+        
+        # Fetch ONE_TIME campaigns (promotional)
+        print("\n--- Fetching Promotional Campaigns ---")
+        onetime_campaigns = campaign_fetcher.fetch_onetime_campaigns(
             start_date,
             end_date,
-            max_pages=config.MAX_CAMPAIGN_PAGES,
-            fetch_meta=True
+            max_pages=config.MAX_CAMPAIGN_PAGES
         )
         
-        print(f"Fetched {len(campaigns)} campaigns")
+        # Fetch EVENT_TRIGGERED campaigns (transactional)
+        print("\n--- Fetching Transactional Campaigns ---")
+        transactional_campaigns = campaign_fetcher.fetch_transactional_campaigns(
+            start_date,
+            end_date,
+            transactional_list
+        )
+        
+        # Combine all campaigns
+        campaigns = onetime_campaigns + transactional_campaigns
+        
+        print(f"\nTotal campaigns: {len(campaigns)} (Promotional: {len(onetime_campaigns)}, Transactional: {len(transactional_campaigns)})")
         
         if not campaigns:
-            print("ERROR: No campaigns returned from API")
-            flash('No campaigns found for the selected period. Please check the date range or try again later.', 'warning')
+            print("ERROR: No campaigns returned")
+            flash('No campaigns found for the selected period. Please check the date range or configure transactional campaigns in Settings.', 'warning')
             return redirect(url_for('index'))
-        
-        # Check if we hit the limit
-        if len(campaigns) >= (config.MAX_CAMPAIGN_PAGES * 15):
-            flash(f'Warning: Fetched {len(campaigns)} campaigns (limit reached). There may be more campaigns in this period. Consider using a shorter date range for complete data.', 'warning')
         
         # Group campaigns by category
         categories = campaign_fetcher.group_campaigns_by_category(campaigns)

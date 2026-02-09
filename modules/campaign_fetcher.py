@@ -277,6 +277,165 @@ class CampaignFetcher:
                 'error': str(e)
             }
     
+    def fetch_onetime_campaigns(self, start_date: str, end_date: str, 
+                                max_pages: Optional[int] = None) -> List[Dict]:
+        """
+        Fetch ONE_TIME (promotional) campaigns using Campaign Meta API
+        Uses created_date as proxy for sent date
+        
+        Args:
+            start_date: Start date (YYYY-MM-DD)
+            end_date: End date (YYYY-MM-DD)
+            max_pages: Maximum pages to fetch
+            
+        Returns:
+            List of campaign dictionaries with stats
+        """
+        all_campaigns = []
+        page = 1
+        limit = 15  # Max for Campaign Meta API
+        
+        print(f"Fetching ONE_TIME campaigns created from {start_date} to {end_date}...")
+        
+        while True:
+            # Fetch campaigns by created_date
+            meta_result = self.fetch_campaigns_by_date(start_date, end_date, limit, page)
+            
+            if not meta_result.get('success'):
+                print(f"❌ Error fetching campaigns: {meta_result.get('error')}")
+                break
+            
+            campaigns = meta_result.get('campaigns', [])
+            
+            if not campaigns:
+                print(f"No more campaigns on page {page}")
+                break
+            
+            print(f"Page {page} - Found {len(campaigns)} campaigns")
+            
+            # Filter for ONE_TIME campaigns only
+            onetime_campaigns = [c for c in campaigns if c.get('campaign_delivery_type') == 'ONE_TIME']
+            print(f"  {len(onetime_campaigns)} are ONE_TIME campaigns")
+            
+            if onetime_campaigns:
+                # Get campaign IDs
+                campaign_ids = [c.get('campaign_id') for c in onetime_campaigns if c.get('campaign_id')]
+                
+                # Fetch stats in batches of 10
+                for i in range(0, len(campaign_ids), 10):
+                    batch_ids = campaign_ids[i:i+10]
+                    stats_batch = self.fetch_campaign_stats_batch(batch_ids, start_date, end_date)
+                    
+                    # Match stats with campaigns
+                    for campaign in onetime_campaigns:
+                        campaign_id = campaign.get('campaign_id')
+                        if not campaign_id or campaign_id not in batch_ids:
+                            continue
+                        
+                        # Get stats
+                        if campaign_id in stats_batch:
+                            campaign_info = stats_batch[campaign_id]
+                        else:
+                            campaign_info = {
+                                'campaign_id': campaign_id,
+                                'sent': 0,
+                                'delivered': 0,
+                                'open': 0,
+                                'click': 0,
+                                'unsubscribe': 0,
+                                'bounce': 0,
+                                'failed': 0
+                            }
+                        
+                        # Add metadata
+                        campaign_info['campaign_name'] = campaign.get('campaign_name', '')
+                        campaign_info['channel'] = campaign.get('channel', '')
+                        campaign_info['delivery_type'] = campaign.get('campaign_delivery_type', 'ONE_TIME')
+                        campaign_info['status'] = campaign.get('campaign_status', '')
+                        campaign_info['campaign_start_time'] = campaign.get('campaign_start_time', '')
+                        campaign_info['category'] = 'promotional'
+                        
+                        all_campaigns.append(campaign_info)
+            
+            # Check max pages limit
+            if max_pages and page >= max_pages:
+                print(f"⚠️  Reached max pages limit: {page}")
+                break
+            
+            # If we got less than limit, we're done
+            if len(campaigns) < limit:
+                break
+            
+            page += 1
+            time.sleep(0.2)
+        
+        print(f"✅ Fetched {len(all_campaigns)} ONE_TIME campaigns")
+        return all_campaigns
+    
+    def fetch_transactional_campaigns(self, start_date: str, end_date: str, 
+                                     transactional_list: List[Dict]) -> List[Dict]:
+        """
+        Fetch EVENT_TRIGGERED (transactional) campaigns using predefined list
+        
+        Args:
+            start_date: Start date (YYYY-MM-DD)
+            end_date: End date (YYYY-MM-DD)
+            transactional_list: List of dicts with campaign_id, campaign_name, country
+            
+        Returns:
+            List of campaign dictionaries with stats
+        """
+        all_campaigns = []
+        
+        if not transactional_list:
+            print("No transactional campaigns configured")
+            return all_campaigns
+        
+        print(f"Fetching stats for {len(transactional_list)} transactional campaigns...")
+        
+        # Get campaign IDs
+        campaign_ids = [c['campaign_id'] for c in transactional_list]
+        
+        # Fetch stats in batches of 10
+        for i in range(0, len(campaign_ids), 10):
+            batch_ids = campaign_ids[i:i+10]
+            stats_batch = self.fetch_campaign_stats_batch(batch_ids, start_date, end_date)
+            
+            # Match stats with campaigns
+            for campaign_config in transactional_list:
+                campaign_id = campaign_config['campaign_id']
+                if campaign_id not in batch_ids:
+                    continue
+                
+                # Get stats
+                if campaign_id in stats_batch:
+                    campaign_info = stats_batch[campaign_id]
+                else:
+                    campaign_info = {
+                        'campaign_id': campaign_id,
+                        'sent': 0,
+                        'delivered': 0,
+                        'open': 0,
+                        'click': 0,
+                        'unsubscribe': 0,
+                        'bounce': 0,
+                        'failed': 0
+                    }
+                
+                # Add metadata from config
+                campaign_info['campaign_name'] = campaign_config['campaign_name']
+                campaign_info['country'] = campaign_config['country']
+                campaign_info['delivery_type'] = 'EVENT_TRIGGERED'
+                campaign_info['category'] = 'transactional'
+                campaign_info['channel'] = ''  # Will be inferred from name or set later
+                campaign_info['status'] = 'LIVE'
+                campaign_info['campaign_start_time'] = ''
+                
+                all_campaigns.append(campaign_info)
+        
+        print(f"✅ Fetched stats for {len(all_campaigns)} transactional campaigns")
+        return all_campaigns
+    
     def fetch_all_campaigns(self, start_date: str, end_date: str, 
                            max_pages: Optional[int] = None,
                            fetch_meta: bool = True) -> List[Dict]:
@@ -608,12 +767,21 @@ class CampaignFetcher:
             channel = campaign.get('channel', '').lower()
             category = campaign.get('category', 'unknown')
             
-            # Determine country
-            is_uk = 'uk' in campaign_name or 'gb' in campaign_name
-            is_uae = 'uae' in campaign_name or 'ae' in campaign_name
+            # Determine country - check explicit country field first (for transactional)
+            country = campaign.get('country', '').upper()
+            if country == 'UK':
+                is_uk = True
+                is_uae = False
+            elif country == 'UAE':
+                is_uk = False
+                is_uae = True
+            else:
+                # Infer from campaign name (for promotional)
+                is_uk = 'uk' in campaign_name or 'gb' in campaign_name
+                is_uae = 'uae' in campaign_name or 'ae' in campaign_name
             
             # Determine channel
-            is_push = channel in ['push', 'android', 'ios'] or 'push' in campaign_name
+            is_push = channel in ['push', 'android', 'ios'] or 'push' in campaign_name or 'pn' in campaign_name
             is_email = channel == 'email' or 'email' in campaign_name
             
             # Determine type
