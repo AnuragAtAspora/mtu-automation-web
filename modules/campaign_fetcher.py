@@ -740,18 +740,10 @@ class CampaignFetcher:
                 if all_variations:
                     perf_stats = all_variations.get('performance_stats', {})
                     
-                    # Debug: Show open and click related fields
-                    if sent == 0:
-                        open_val = perf_stats.get('open', 0)
-                        click_val = perf_stats.get('click', 0)
-                        print(f"    Campaign {campaign_id[:8]} - open={open_val}, click={click_val}")
-                        print(f"    Available fields with 'open': {[k for k in perf_stats.keys() if 'open' in k.lower()]}")
-                        print(f"    Available fields with 'click': {[k for k in perf_stats.keys() if 'click' in k.lower()]}")
-                    
                     sent = perf_stats.get('sent', 0)
                     delivered = perf_stats.get('delivered', 0)
-                    opened = perf_stats.get('open', 0)  # Field is 'open' not 'opened'
-                    click = perf_stats.get('click', 0)
+                    opened = perf_stats.get('open', 0)  # Unique opens
+                    click = perf_stats.get('click', 0)  # Unique clicks
                     unsubscribe = perf_stats.get('unsubscribe', 0)
                     bounce = perf_stats.get('bounced', 0)
                     failed = perf_stats.get('failed', 0)
