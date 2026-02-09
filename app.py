@@ -76,11 +76,9 @@ def add_transactional_campaign():
     """Add a new transactional campaign"""
     try:
         campaign_id = request.form.get('campaign_id', '').strip()
-        campaign_name = request.form.get('campaign_name', '').strip()
-        country = request.form.get('country', '').strip()
         
-        if not campaign_id or not campaign_name or not country:
-            flash('All fields are required', 'error')
+        if not campaign_id:
+            flash('Campaign ID is required', 'error')
             return redirect(url_for('settings'))
         
         # Load existing campaigns
@@ -95,18 +93,18 @@ def add_transactional_campaign():
             flash('Campaign ID already exists', 'error')
             return redirect(url_for('settings'))
         
-        # Add new campaign
+        # Add new campaign with just ID (name and country will be fetched during metrics calculation)
         campaigns.append({
             'campaign_id': campaign_id,
-            'campaign_name': campaign_name,
-            'country': country
+            'campaign_name': '',  # Will be populated later
+            'country': ''  # Will be inferred later
         })
         
         # Save to file
         with open('transactional_campaigns.json', 'w') as f:
             json.dump(campaigns, f, indent=2)
         
-        flash(f'Campaign "{campaign_name}" added successfully', 'success')
+        flash(f'Campaign {campaign_id} added successfully', 'success')
         return redirect(url_for('settings'))
         
     except Exception as e:

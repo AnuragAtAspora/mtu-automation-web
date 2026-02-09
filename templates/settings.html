@@ -7,29 +7,17 @@
 
 <div class="settings-section">
     <h2>Transactional Campaigns</h2>
-    <p class="subtitle">Manage the list of event-triggered/transactional campaigns for metrics calculation</p>
+    <p class="subtitle">Add campaign IDs for event-triggered/transactional campaigns. Campaign names and countries will be fetched automatically during metrics calculation.</p>
     
     <!-- Add New Campaign Form -->
     <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
         <h3 style="margin-top: 0;">Add Transactional Campaign</h3>
         <form method="POST" action="{{ url_for('add_transactional_campaign') }}">
-            <div style="display: grid; grid-template-columns: 2fr 2fr 1fr auto; gap: 10px; align-items: end;">
+            <div style="display: grid; grid-template-columns: 3fr auto; gap: 10px; align-items: end;">
                 <div>
                     <label for="campaign_id">Campaign ID *</label>
                     <input type="text" id="campaign_id" name="campaign_id" required 
                            placeholder="e.g., 67c1cfc8c1b46a5ad5022de7">
-                </div>
-                <div>
-                    <label for="campaign_name">Campaign Name *</label>
-                    <input type="text" id="campaign_name" name="campaign_name" required 
-                           placeholder="e.g., Order Confirmation Email">
-                </div>
-                <div>
-                    <label for="country">Country *</label>
-                    <select id="country" name="country" required>
-                        <option value="UK">UK</option>
-                        <option value="UAE">UAE</option>
-                    </select>
                 </div>
                 <div>
                     <button type="submit" class="btn" style="margin: 0;">Add Campaign</button>
@@ -47,8 +35,6 @@
             <thead>
                 <tr>
                     <th>Campaign ID</th>
-                    <th>Campaign Name</th>
-                    <th>Country</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -56,12 +42,6 @@
                 {% for campaign in campaigns %}
                 <tr>
                     <td><code>{{ campaign.campaign_id }}</code></td>
-                    <td>{{ campaign.campaign_name }}</td>
-                    <td>
-                        <span style="padding: 4px 8px; border-radius: 4px; background: {% if campaign.country == 'UK' %}#e3f2fd{% else %}#fff3e0{% endif %};">
-                            {{ campaign.country }}
-                        </span>
-                    </td>
                     <td>
                         <form method="POST" action="{{ url_for('delete_transactional_campaign') }}" style="display: inline;">
                             <input type="hidden" name="campaign_id" value="{{ campaign.campaign_id }}">
