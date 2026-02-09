@@ -383,7 +383,8 @@ def calculate_metrics():
                               'campaign_start_time': c.get('campaign_start_time', ''),
                               'sent': c.get('sent', 0),
                               'delivered': c.get('delivered', 0),
-                              'click': c.get('click', 0)} 
+                              'click': c.get('click', 0),
+                              'open': c.get('open', 0)} 
                              for c in v] 
                             for k, v in categories.items()},
             'start_date': start_date,
@@ -452,8 +453,15 @@ def download_csv(category):
         output = io.StringIO()
         writer = csv.writer(output)
         
-        # Write header
-        writer.writerow(['Campaign Name', 'Sent Day', 'Nature', 'Total Sent', 'Total Clicks'])
+        # Determine if this is email or push
+        is_email = 'email' in category
+        is_push = 'push' in category
+        
+        # Write header based on channel
+        if is_email:
+            writer.writerow(['Campaign Name', 'Sent Day', 'Nature', 'Total Sent', 'Total Opens'])
+        else:
+            writer.writerow(['Campaign Name', 'Sent Day', 'Nature', 'Total Sent', 'Total Clicks'])
         
         # Determine nature from category
         if 'promotional' in category:
@@ -467,7 +475,12 @@ def download_csv(category):
         for campaign in campaigns:
             campaign_name = campaign.get('campaign_name', 'N/A')
             sent = campaign.get('sent', 0)
-            clicks = campaign.get('click', 0)
+            
+            # Use opens for email, clicks for push
+            if is_email:
+                engagement = campaign.get('open', 0)
+            else:
+                engagement = campaign.get('click', 0)
             
             # Sent day - use campaign_start_time if available, otherwise use start_date
             campaign_start_time = campaign.get('campaign_start_time', '')
@@ -477,7 +490,7 @@ def download_csv(category):
             else:
                 sent_day = start_date
             
-            writer.writerow([campaign_name, sent_day, nature, sent, clicks])
+            writer.writerow([campaign_name, sent_day, nature, sent, engagement])
         
         # Prepare file for download
         output.seek(0)
