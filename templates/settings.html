@@ -7,7 +7,7 @@
 
 <div class="settings-section">
     <h2>Transactional Campaigns</h2>
-    <p class="subtitle">Add campaign IDs for event-triggered/transactional campaigns. Campaign names and countries will be fetched automatically during metrics calculation.</p>
+    <p class="subtitle">Add campaign IDs for event-triggered/transactional campaigns. Campaign details will be validated and fetched automatically.</p>
     
     <!-- Add New Campaign Form -->
     <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
@@ -35,6 +35,8 @@
             <thead>
                 <tr>
                     <th>Campaign ID</th>
+                    <th>Campaign Name</th>
+                    <th>Country</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -42,6 +44,16 @@
                 {% for campaign in campaigns %}
                 <tr>
                     <td><code>{{ campaign.campaign_id }}</code></td>
+                    <td>{{ campaign.campaign_name or 'N/A' }}</td>
+                    <td>
+                        {% if campaign.country %}
+                        <span style="padding: 4px 8px; border-radius: 4px; background: {% if campaign.country == 'UK' %}#e3f2fd{% else %}#fff3e0{% endif %};">
+                            {{ campaign.country }}
+                        </span>
+                        {% else %}
+                        <span style="color: #999;">N/A</span>
+                        {% endif %}
+                    </td>
                     <td>
                         <form method="POST" action="{{ url_for('delete_transactional_campaign') }}" style="display: inline;">
                             <input type="hidden" name="campaign_id" value="{{ campaign.campaign_id }}">

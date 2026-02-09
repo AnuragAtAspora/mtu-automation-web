@@ -90,25 +90,59 @@ def add_transactional_campaign():
         
         # Check if campaign already exists
         if any(c['campaign_id'] == campaign_id for c in campaigns):
-            flash('Campaign ID already exists', 'error')
+            flash('Campaign ID already exists in the list', 'error')
             return redirect(url_for('settings'))
         
-        # Add new campaign with just ID (name and country will be fetched during metrics calculation)
+        # Fetch campaign details from MoEngage API to validate
+        from modules import CampaignFetcher
+        fetcher = CampaignFetcher(
+            workspace_id=config.MOENGAGE_CONFIG['workspace_id'],
+            campaign_api_key=config.MOENGAGE_CONFIG['campaign_api_key'],
+            data_center=config.MOENGAGE_CONFIG['data_center']
+        )
+        
+        print(f"Validating campaign ID: {campaign_id}")
+        meta = fetcher.fetch_campaign_meta(campaign_id)
+        
+        if not meta.get('success'):
+            flash(f'Invalid Campaign ID: Could not fetch campaign details from MoEngage. Please check the ID and try again.', 'error')
+            return redirect(url_for('settings'))
+        
+        # Validate delivery type
+        delivery_type = meta.get('delivery_type', '')
+        if delivery_type != 'EVENT_TRIGGERED':
+            flash(f'Invalid Campaign Type: This campaign has delivery type "{delivery_type}". Only EVENT_TRIGGERED campaigns can be added here.', 'error')
+            return redirect(url_for('settings'))
+        
+        campaign_name = meta.get('campaign_name', 'Unknown Campaign')
+        
+        # Infer country from campaign name
+        campaign_name_lower = campaign_name.lower()
+        if 'uk' in campaign_name_lower or 'gb' in campaign_name_lower:
+            country = 'UK'
+        elif 'uae' in campaign_name_lower or 'ae' in campaign_name_lower:
+            country = 'UAE'
+        else:
+            country = 'Unknown'
+        
+        # Add new campaign with fetched details
         campaigns.append({
             'campaign_id': campaign_id,
-            'campaign_name': '',  # Will be populated later
-            'country': ''  # Will be inferred later
+            'campaign_name': campaign_name,
+            'country': country
         })
         
         # Save to file
         with open('transactional_campaigns.json', 'w') as f:
             json.dump(campaigns, f, indent=2)
         
-        flash(f'Campaign {campaign_id} added successfully', 'success')
+        flash(f'✓ Campaign added: "{campaign_name}" ({country})', 'success')
         return redirect(url_for('settings'))
         
     except Exception as e:
         print(f"Error adding campaign: {e}")
+        import traceback
+        traceback.print_exc()
         flash(f'Error adding campaign: {str(e)}', 'error')
         return redirect(url_for('settings'))
 
