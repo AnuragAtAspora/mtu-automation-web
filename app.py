@@ -459,9 +459,9 @@ def download_csv(category):
         
         # Write header based on channel
         if is_email:
-            writer.writerow(['Campaign Name', 'Sent Day', 'Nature', 'Total Sent', 'Total Opens'])
+            writer.writerow(['Campaign Name', 'Sent Day', 'Nature', 'Total Sent', 'Unique Opens'])
         else:
-            writer.writerow(['Campaign Name', 'Sent Day', 'Nature', 'Total Sent', 'Total Clicks'])
+            writer.writerow(['Campaign Name', 'Sent Day', 'Nature', 'Total Sent', 'Unique Clicks'])
         
         # Determine nature from category
         if 'promotional' in category:
