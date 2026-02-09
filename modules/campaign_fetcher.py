@@ -723,16 +723,16 @@ class CampaignFetcher:
         failed = 0
         
         # Stats API has nested structure: platforms -> locales -> all_locale -> variations -> performance_stats
-        # We need to aggregate across platforms but NOT double-count locales/variations
         platforms = campaign.get('platforms', {})
         
         if not platforms:
             print(f"  ⚠️  Campaign {campaign_id[:8]} has no platforms data")
         
-        for platform_name, platform_data in platforms.items():
+        # Check if ALL_PLATFORMS exists - if so, use only that to avoid double counting
+        if 'ALL_PLATFORMS' in platforms:
+            # Use only ALL_PLATFORMS which already aggregates all platforms
+            platform_data = platforms['ALL_PLATFORMS']
             locales = platform_data.get('locales', {})
-            
-            # API returns 'all_locale' (singular), not 'all_locales' (plural)
             all_locale = locales.get('all_locale', {})
             if all_locale:
                 variations = all_locale.get('variations', {})
@@ -740,14 +740,34 @@ class CampaignFetcher:
                 if all_variations:
                     perf_stats = all_variations.get('performance_stats', {})
                     
-                    # Aggregate stats across platforms
-                    sent += perf_stats.get('sent', 0)
-                    delivered += perf_stats.get('delivered', 0)
-                    opened += perf_stats.get('opened', 0)
-                    click += perf_stats.get('click', 0)
-                    unsubscribe += perf_stats.get('unsubscribe', 0)
-                    bounce += perf_stats.get('bounced', 0)
-                    failed += perf_stats.get('failed', 0)
+                    sent = perf_stats.get('sent', 0)
+                    delivered = perf_stats.get('delivered', 0)
+                    opened = perf_stats.get('opened', 0)
+                    click = perf_stats.get('click', 0)
+                    unsubscribe = perf_stats.get('unsubscribe', 0)
+                    bounce = perf_stats.get('bounced', 0)
+                    failed = perf_stats.get('failed', 0)
+        else:
+            # No ALL_PLATFORMS, aggregate across individual platforms
+            for platform_name, platform_data in platforms.items():
+                locales = platform_data.get('locales', {})
+                
+                # API returns 'all_locale' (singular), not 'all_locales' (plural)
+                all_locale = locales.get('all_locale', {})
+                if all_locale:
+                    variations = all_locale.get('variations', {})
+                    all_variations = variations.get('all_variations', {})
+                    if all_variations:
+                        perf_stats = all_variations.get('performance_stats', {})
+                        
+                        # Aggregate stats across platforms
+                        sent += perf_stats.get('sent', 0)
+                        delivered += perf_stats.get('delivered', 0)
+                        opened += perf_stats.get('opened', 0)
+                        click += perf_stats.get('click', 0)
+                        unsubscribe += perf_stats.get('unsubscribe', 0)
+                        bounce += perf_stats.get('bounced', 0)
+                        failed += perf_stats.get('failed', 0)
         
         print(f"  Campaign {campaign_id[:8]}: sent={sent}, click={click}")
         
