@@ -1,1 +1,884 @@
-[]
+[
+  {
+    "campaign_id": "67f239c86ae005ffacc57c14",
+    "campaign_name": "aspora_cash_added_uae",
+    "channel": "PUSH",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f3ca49237c742ab55a4b50",
+    "campaign_name": "Aspora_cash_added_uk",
+    "channel": "PUSH",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "67f3ca8b876b3b9c89ca0c38",
+    "campaign_name": "Aspora_cash_added_eu",
+    "channel": "PUSH",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "68ec7b6c90aa2d407fa80623",
+    "campaign_name": "Recipient added - UK",
+    "channel": "PUSH",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "68ec7b8090aa2d407fa8062a",
+    "campaign_name": "Recipient added - UAE",
+    "channel": "PUSH",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "68f4afe8a397abeba5b0942f",
+    "campaign_name": "2-10min_payment completed_UK",
+    "channel": "PUSH",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "68f4aff217f93569e3e1e3ff",
+    "campaign_name": "2-10min_payment completed_UAE",
+    "channel": "PUSH",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "68f4b0242fe08d3cdf4eb4f0",
+    "campaign_name": "1min_payment completed_UK",
+    "channel": "PUSH",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "68f4b031bb7998e3e2f77612",
+    "campaign_name": "1min_payment completed_UAE",
+    "channel": "PUSH",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "68f8dbcc2e7e866f30b71511",
+    "campaign_name": "0min_payment completed_UK",
+    "channel": "PUSH",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "68f8e2775d7066243aab55ab",
+    "campaign_name": "0min_payment completed_UAE",
+    "channel": "PUSH",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "69010fb64db27b5422cdbec3",
+    "campaign_name": "BBPS-Nudge_payment completed_UK",
+    "channel": "PUSH",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "690b5a1cff93a64b6be2b919",
+    "campaign_name": "BBPS - Bill Pending",
+    "channel": "PUSH",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "690b5a5f4e10dd402f9cfa8b",
+    "campaign_name": "BBPS - Bill Reminder",
+    "channel": "PUSH",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "690b5cfc8a64aa09160bdbef",
+    "campaign_name": "BBPS - Bill Failed",
+    "channel": "PUSH",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "690b5dd38fa796d34a8b97b6",
+    "campaign_name": "BBPS - Bill Paid (single)",
+    "channel": "PUSH",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "6920b602847921ed01ed8b5b",
+    "campaign_name": "0min_payment completed_US",
+    "channel": "PUSH",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "6920b64c81a2702280b160ad",
+    "campaign_name": "1min_payment completed_US",
+    "channel": "PUSH",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "6920b7a00eaf6d51f6795aed",
+    "campaign_name": "2-60 min_payment completed_US",
+    "channel": "PUSH",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "6920ba3bfb79c5d797c6c8b6",
+    "campaign_name": "61-120 min_payment completed_US",
+    "channel": "PUSH",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "69380631997b1dc8798c53fc",
+    "campaign_name": "Payment completed >10mins_UAE",
+    "channel": "PUSH",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "697264356ab2c7f259358e72",
+    "campaign_name": "Transfer Completed_Trustpilot >2hrs- Jan22",
+    "channel": "PUSH",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "6984d5a6be643d86b46c0cea",
+    "campaign_name": "Variable_Referral_Referee_Singed_Up_UAE",
+    "channel": "PUSH",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "6984d64f5d6170e095bb4866",
+    "campaign_name": "Variable_Referral_Referee_Singed_Up_UK_",
+    "channel": "PUSH",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "6984d742e994ba1c988c1181",
+    "campaign_name": "Variable_Referral_Completed_UK",
+    "channel": "PUSH",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "6984d79bbe643d86b46c0d70",
+    "campaign_name": "Variable_Referral_Completed_UAE",
+    "channel": "PUSH",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f044e1a2687147eb687c0c",
+    "campaign_name": "Recipient added (UK)_ Aspora",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "67f0454be826569bbf699653",
+    "campaign_name": " Recipient added (UAE)_ Aspora",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f046719e4adc83b6dbe80b",
+    "campaign_name": " Recipient added (EU)_ Aspora",
+    "channel": "EMAIL",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "67f0af14583ab16fbcb17549",
+    "campaign_name": "Aspora_payment completed_UAE",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f0b1d2546d74991f07d0e8",
+    "campaign_name": "- Aspora_payment completed_UK",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "67f0b4cafd12a2ce76f4dd67",
+    "campaign_name": "Aspora_ KYC Rejected UAE (reason) ",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f021c312e3c0410720ef19",
+    "campaign_name": " Welcome Email (UK)_ Aspora",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "67f026d3bde1d5b59745851e",
+    "campaign_name": " Welcome Email (UAE)_ Aspora",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f3c3d0b49535f328f1c096",
+    "campaign_name": "Aspora_verification_pending_uae",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f3c3f890661a78ef80c900",
+    "campaign_name": "Aspora_verification_pending_uk",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "67f3c507db55db0476974c7e",
+    "campaign_name": " Aspora_verification_pending_EU",
+    "channel": "EMAIL",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "67f3c710826f08713b82da7b",
+    "campaign_name": "Aspora_ KYC Rejected EU (reason) ",
+    "channel": "EMAIL",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "67f3d103db55db0476975134",
+    "campaign_name": "aspora_cash_added_uae",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f3d1f7b2a128c0ee0aaf3d",
+    "campaign_name": "Aspora_cash_added_uk",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "67f3d2e12e229e830978c8ab",
+    "campaign_name": "Aspora_cash_added_EU",
+    "channel": "EMAIL",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "67f3e5712bba143627f2aff9",
+    "campaign_name": "Recieved money (UK)_ Aspora",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "67f4dee5af0ec264b8651e4e",
+    "campaign_name": "Aspora_Transfer Delayed_UK",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "67f4f625467091d3ee53d799",
+    "campaign_name": "Payment failed (UK)_ Aspora",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "67f4f75b360740061e99ca09",
+    "campaign_name": "Payment failed (UAE)_ Aspora",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67778de9b70d7edda720e7e9",
+    "campaign_name": "UAE - Leantech Declines - UNSEEN_BANK_ERROR",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f50ddcab2d57889fc1c4de",
+    "campaign_name": "Aspora - UAE - Leantech Declines - UNSEEN_BANK_ERROR",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f50f870cb7ce38bb74d7e9",
+    "campaign_name": "Aspora - UAE - Leantech Declines - PAYMENT_ABOVE_MAX_AMOUNT",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67778ccecb6d2d78ca0026d0",
+    "campaign_name": "UAE - Leantech Declines - PAYMENT_ABOVE_MAX_AMOUNT",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f512f679fb663c6f9fddbc",
+    "campaign_name": "Aspora - UAE - Leantech Declines -EU_ACCOUNT_LOCKED",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67778c6ae21253b23a8a5880",
+    "campaign_name": "UAE - Leantech Declines - EU_ACCOUNT_LOCKED",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f514446802aac03c0015ac",
+    "campaign_name": "Aspora - UAE - Leantech Declines -ACCOUNT_SETTINGS_LIMIT_EXCEEDED",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67778c0f3595e6385c8dc64a",
+    "campaign_name": "UAE - Leantech Declines - ACCOUNT_SETTINGS_LIMIT_EXCEEDED",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f515a3e476229561ce29bf",
+    "campaign_name": "Aspora - UAE - Leantech Declines -UNKNOWN_ACCOUNT",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67778b9b5b0938d563060b32",
+    "campaign_name": "UAE - Leantech Declines - UNKNOWN_ACCOUNT",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f517655f402fc990053d0e",
+    "campaign_name": "Aspora - UAE - Leantech Declines -SESSION_EXPIRED",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67778b335b0938d563060b1f",
+    "campaign_name": "UAE - Leantech Declines - SESSION_EXPIRED",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f5194a6802aac03c001801",
+    "campaign_name": "Aspora - UAE - Leantech Declines -REPEATED_TRANSACTION",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67778a9d9fa1cf120d3bfbd8",
+    "campaign_name": "UAE - Leantech Declines - REPEATED_TRANSACTION",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f51b4d28018c49df03cbb3",
+    "campaign_name": "Aspora - UAE - Leantech Declines -BANK_ISSUE",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "677789f34494db91837350da",
+    "campaign_name": "UAE - Leantech Declines - BANK_ISSUE",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f51bed61c9f9fc90192912",
+    "campaign_name": "Aspora - UAE - Leantech Declines -ONLINE_TRANSFERS_DISABLED",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "6777891ab70d7edda720e711",
+    "campaign_name": "UAE - Leantech Declines - ONLINE_TRANSFERS_DISABLED",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f51d64db68ee41da3c6ae8",
+    "campaign_name": "Aspora - UAE - Leantech Declines -COOLDOWN_INCOMPLETE",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67778897d0d113eff8d934ee",
+    "campaign_name": "UAE - Leantech Declines - COOLDOWN_INCOMPLETE",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f51ee7e476229561ce2d59",
+    "campaign_name": "Aspora - UAE - Leantech Declines -LOGGED_IN_ELSEWHERE",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "677787a3d0d113eff8d934ce",
+    "campaign_name": "UAE - Leantech Declines - LOGGED_IN_ELSEWHERE",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f5205b853b490e19687860",
+    "campaign_name": "Aspora - UAE - Leantech Declines - EXCEEDS_DAILY_LIMIT",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "6777867b4494db918373508e",
+    "campaign_name": "UAE - Leantech Declines - EXCEEDS_DAILY_LIMIT",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f52225db68ee41da3c6c67",
+    "campaign_name": "Aspora - UAE - Leantech Declines - BENEFICIARY_NOT_FOUND",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67778613b2bdbc7aa5dde922",
+    "campaign_name": "UAE - Leantech Declines - BENEFICIARY_NOT_FOUND ",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f5240fe476229561ce2e54",
+    "campaign_name": "Aspora - UAE - Checkout Declines - System Malfunction",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f524d028018c49df03ce3d",
+    "campaign_name": "Aspora - UAE - Checkout Declines - Exceeds Withdrawal Frequency Limit",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f5256be476229561ce2e8d",
+    "campaign_name": "Aspora - UAE - Checkout Declines - Refer To Card Issuer",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f526188d3b09b2f0849e83",
+    "campaign_name": "Aspora - UAE - Checkout Declines - BLOCKED_FIRST_USE",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f52695db68ee41da3c6d5b",
+    "campaign_name": "Aspora - UAE - Checkout Declines - Allowable PIN Tries Exceeded",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f52a46213a531aa71147c4",
+    "campaign_name": "Aspora - UAE - Checkout Declines -  Closed Account",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f52b488d3b09b2f0849f58",
+    "campaign_name": " Aspora - UAE - Checkout Declines -  Invalid Card Number",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f52bd35f402fc9900542a3",
+    "campaign_name": "Aspora - UAE - Checkout Declines -  Security Violation",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f52d900cb7ce38bb74deca",
+    "campaign_name": "Aspora - UAE - Checkout Declines -  Restricted Card",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f53169ee249c62399966f7",
+    "campaign_name": "Aspora - UAE - Risk Blocked Transaction",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f53558e476229561ce2ffe",
+    "campaign_name": "Aspora - UAE - Transaction Not Permitted To Cardholder",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f536066802aac03c001ec9",
+    "campaign_name": "Aspora - UAE - Declined - Do Not Honour",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f537eaab2d57889fc1cef5",
+    "campaign_name": "Aspora - UAE - Declined - Cardholder Failed 3D-Secure Authentication",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f539050cb7ce38bb74df92",
+    "campaign_name": "Aspora - UAE - Declined - System malfunction",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f539db0cb7ce38bb74df99",
+    "campaign_name": "Aspora - UAE - Declined - Decline For CVV2 Failure",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f53c5b1da2f54e141c2942",
+    "campaign_name": " Aspora - UAE - Declined - Invalid Transaction",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67a4c3b4b71a411bb0f2eb2c",
+    "campaign_name": "UAE_REFUND_REQUESTED_vance",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67a74329bd873baba7c6ae98",
+    "campaign_name": "UAE_RFI_DOCUMENT_ACCEPTED",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67a7423cb4a0754469c483c8",
+    "campaign_name": "UAE_RFI_DOCUMENT_REQUESTED",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67a743a1f397f4cb8e485574",
+    "campaign_name": "UAE_RFI_REJECTED",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "6749d5db2b91a7cd6fd2422c",
+    "campaign_name": "UAE-payment initiated_not completed -after expiry_MBT_29thNov",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "6749d5c7648b5305cabcc614",
+    "campaign_name": "UAE-payment initiated_not completed -MBT-0 after15 mins-29thNov",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "6749d5cea97dde37a1357606",
+    "campaign_name": "UAE-payment initiated_not completed-MBT-0 after30 mins-29thNov",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67a0a73df514befc0d75bccf",
+    "campaign_name": "Vance_UK_RFI_DOCUMENT_ACCEPTED",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "67a0a6f8f9406ae1ddd26b18",
+    "campaign_name": "Vance_UK_RFI_DOCUMENT_REQUESTED",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "67a1f1a539a852e471d66fca",
+    "campaign_name": "UK_RFI_REJECTED",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "67a0a673f514befc0d75bcb5",
+    "campaign_name": "UK_RFI_TRANSFER_EXPIRED",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "67fe04c1a7e9e7d3791242fc",
+    "campaign_name": "Aspora_RFI_Rejected_UAE",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67fe076dcc032ff69e68afb8",
+    "campaign_name": "Aspora_RFI_DOCUMENT_ACCEPTED_UAE",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67fe61c08ea3fc0ec61c3a9d",
+    "campaign_name": "Aspora_RFI_DOCUMENT_REQUESTED_UAE",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67fe630d688029871a72b878",
+    "campaign_name": "Aspora_RFI_Rejected_UK",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "67fe643b59b9f4da637eb2a1",
+    "campaign_name": "Aspora_RFI_DOCUMENT_ACCEPTED_UK",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "67fe64e6eb71d8d27e5e70a8",
+    "campaign_name": "Aspora_RFI_DOCUMENT_REQUESTED_UK",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "67fe66b4806321e17e4cb878",
+    "campaign_name": "Aspora_RFI_DOCUMENT_EXPIRED_UK",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "67ffaff0c0125695dde3e4ff",
+    "campaign_name": "Aspora - UAE - Leantech Declines - SESSION_EXPIRED_ON_OTP",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67ffb0c40222cd2a4c210837",
+    "campaign_name": "Aspora - UAE - Leantech Declines - Insufficient Funds",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67778295b2bdbc7aa5dde8a1",
+    "campaign_name": "Vance - UAE - Leantech Declines - Insufficient Funds",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67ffb18c0222cd2a4c210876",
+    "campaign_name": "Aspora - UAE - Leantech Declines - PAYMENT_ALREADY_IN_PROGRESS",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "677783fc6f7698ec1ccc7196",
+    "campaign_name": "UAE - Leantech Declines - PAYMENT_ALREADY_IN_PROGRESS",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67ffb2f8c047904acac76a5c",
+    "campaign_name": "Aspora - UAE - Leantech Declines - SESSION_NOT_FOUND",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "677785bf5e5967058c2b4bdb",
+    "campaign_name": "Vance - UAE - Leantech Declines - SESSION_NOT_FOUND ",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f0318227ab86d3358edbd6",
+    "campaign_name": "Verified (UK)_ Aspora",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "67f032a354e864a639c25028",
+    "campaign_name": "Verified (UAE)_ Aspora",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "67f0330054e864a639c2502e",
+    "campaign_name": "Verified (EU)_ Aspora",
+    "channel": "EMAIL",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "6800b1837c75e1f7a8dd8079",
+    "campaign_name": "Aspora - UAE-payment initiated_not completed -after expiry",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "6800b2fe7c75e1f7a8dd80d1",
+    "campaign_name": "Aspora - UAE-payment initiated_not completed -MBT-0 after15 mins",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "6800b3fd96dfc5af20f672af",
+    "campaign_name": "Aspora - UAE-payment initiated_not completed -MBT-0 after 30 mins",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "68015372dbcd6bdd748f64a8",
+    "campaign_name": "Recieved money (UAE)_ Aspora",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "6801579ab3036290e5063f2a",
+    "campaign_name": " Recieved money (UK)_ Aspora",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "6801592e496ea839567ed1c3",
+    "campaign_name": "Recieved money (EU)_ Aspora",
+    "channel": "EMAIL",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "6801604f38545be5cbdc117a",
+    "campaign_name": "Aspora_payment completed_EU",
+    "channel": "EMAIL",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "680b31fd7af2628d0b97c24e",
+    "campaign_name": "Aspora_cash_added_uk_boldpitch",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "68a3490045d579581b9859d0",
+    "campaign_name": "KYC Rejected US (reason) - Full KYC",
+    "channel": "EMAIL",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "68a34909891aa772df01838c",
+    "campaign_name": "FP Verified (US)",
+    "channel": "EMAIL",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "68a371f9dc1b31d991614121",
+    "campaign_name": "US_Transfer_Completed",
+    "channel": "EMAIL",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "68a371fd1200e00ddfab4364",
+    "campaign_name": "US_Payment_failed",
+    "channel": "EMAIL",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "68a372031200e00ddfab436c",
+    "campaign_name": "US_Recieved_money",
+    "channel": "EMAIL",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "68ee726013c6ab8887d63d8f",
+    "campaign_name": "Aspora_1min_payment completed_UAE",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "68ee726c3b848737121a61b7",
+    "campaign_name": "Aspora_2-10min_payment completed_UAE",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "68ee728513c6ab8887d63d9f",
+    "campaign_name": "Aspora_2-10min_payment completed_UK",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "68ee728e0e359d2b39d3658f",
+    "campaign_name": "Aspora_1min_payment completed_UK",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "68f4c0812acfab54a9c22c37",
+    "campaign_name": "Aspora_0min_payment completed_UAE",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "68f4c08f4344facc4b310f73",
+    "campaign_name": "Aspora_0min_payment completed_UK",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "690b59244e10dd402f9cf9bd",
+    "campaign_name": "BBPS - Bill Pending",
+    "channel": "EMAIL",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "690b5b36cedf87627cdacca0",
+    "campaign_name": "BBPS - Bill Reminder",
+    "channel": "EMAIL",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "690b5d8bf449a81adc611d66",
+    "campaign_name": "BBPS - Bill Failed",
+    "channel": "EMAIL",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "690b5e15f99901bdbf5d3cc0",
+    "campaign_name": "BBPS - Bill Paid (single)",
+    "channel": "EMAIL",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "69010ffaa49f5c5ad18cba5d",
+    "campaign_name": "BBPS-Nudge_payment completed_UK",
+    "channel": "EMAIL",
+    "country": "UK"
+  },
+  {
+    "campaign_id": "6920b5d51eab8bbdd973a233",
+    "campaign_name": "0 min_payment completed_US",
+    "channel": "EMAIL",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "6920b6c30eaf6d51f6795a68",
+    "campaign_name": "1 min_payment completed_US",
+    "channel": "EMAIL",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "6920b81176779784f3416ee0",
+    "campaign_name": "2-60min_payment completed_US",
+    "channel": "EMAIL",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "6920b9ec7e2581a6c2d71a20",
+    "campaign_name": "61-120min_payment completed_review",
+    "channel": "EMAIL",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "6968dbec4da94e53b775f166",
+    "campaign_name": "Express_Transfer_Failed",
+    "channel": "EMAIL",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "696912df0c8ca1d86390eeb2",
+    "campaign_name": "Express_Transfer_Submitted",
+    "channel": "EMAIL",
+    "country": "Unknown"
+  },
+  {
+    "campaign_id": "6984cfaace404f030413680b",
+    "campaign_name": "Variable_Referral_RefereeSignedUp_UAE",
+    "channel": "EMAIL",
+    "country": "UAE"
+  },
+  {
+    "campaign_id": "6984d23dbe643d86b46c0c01",
+    "campaign_name": "Variable_Referral_RefereeSignedUp_UK_",
+    "channel": "EMAIL",
+    "country": "UK"
+  }
+]
