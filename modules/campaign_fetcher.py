@@ -731,25 +731,39 @@ class CampaignFetcher:
         
         if not platforms:
             print(f"  ⚠️  Campaign {campaign_id[:8]} has no platforms data")
+        else:
+            print(f"  Campaign {campaign_id[:8]} platforms: {list(platforms.keys())}")
         
         for platform_name, platform_data in platforms.items():
+            print(f"    Platform '{platform_name}' keys: {list(platform_data.keys()) if isinstance(platform_data, dict) else 'not a dict'}")
+            
             locales = platform_data.get('locales', {})
+            print(f"    Locales keys: {list(locales.keys()) if locales else 'empty'}")
             
             # Only use 'all_locales' to avoid double counting
             all_locales = locales.get('all_locales', {})
             if all_locales:
+                print(f"    all_locales keys: {list(all_locales.keys())}")
                 variations = all_locales.get('variations', {})
+                print(f"    variations keys: {list(variations.keys()) if variations else 'empty'}")
                 all_variations = variations.get('all_variations', {})
-                perf_stats = all_variations.get('performance_stats', {})
-                
-                # Aggregate stats across platforms
-                sent += perf_stats.get('sent', 0)
-                delivered += perf_stats.get('delivered', 0)
-                opened += perf_stats.get('opened', 0)
-                click += perf_stats.get('click', 0)
-                unsubscribe += perf_stats.get('unsubscribe', 0)
-                bounce += perf_stats.get('bounced', 0)
-                failed += perf_stats.get('failed', 0)
+                if all_variations:
+                    print(f"    all_variations keys: {list(all_variations.keys())}")
+                    perf_stats = all_variations.get('performance_stats', {})
+                    print(f"    performance_stats: sent={perf_stats.get('sent', 0)}, click={perf_stats.get('click', 0)}")
+                    
+                    # Aggregate stats across platforms
+                    sent += perf_stats.get('sent', 0)
+                    delivered += perf_stats.get('delivered', 0)
+                    opened += perf_stats.get('opened', 0)
+                    click += perf_stats.get('click', 0)
+                    unsubscribe += perf_stats.get('unsubscribe', 0)
+                    bounce += perf_stats.get('bounced', 0)
+                    failed += perf_stats.get('failed', 0)
+                else:
+                    print(f"    ⚠️  all_variations is empty")
+            else:
+                print(f"    ⚠️  all_locales is empty")
         
         print(f"  Campaign {campaign_id[:8]}: sent={sent}, click={click}")
         
