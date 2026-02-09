@@ -769,7 +769,7 @@ class CampaignFetcher:
                         bounce += perf_stats.get('bounced', 0)
                         failed += perf_stats.get('failed', 0)
         
-        print(f"  Campaign {campaign_id[:8]}: sent={sent}, click={click}")
+        print(f"  Campaign {campaign_id[:8]}: sent={sent}, opened={opened}, click={click}")
         
         return {
             'campaign_id': campaign_id,
