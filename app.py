@@ -459,9 +459,9 @@ def download_csv(category):
         
         # Write header based on channel
         if is_email:
-            writer.writerow(['Campaign Name', 'Sent Day', 'Nature', 'Total Sent', 'Unique Opens'])
+            writer.writerow(['Campaign Name', 'Period/Sent Day', 'Nature', 'Total Sent', 'Unique Opens'])
         else:
-            writer.writerow(['Campaign Name', 'Sent Day', 'Nature', 'Total Sent', 'Unique Clicks'])
+            writer.writerow(['Campaign Name', 'Period/Sent Day', 'Nature', 'Total Sent', 'Unique Clicks'])
         
         # Determine nature from category
         if 'promotional' in category:
@@ -482,13 +482,18 @@ def download_csv(category):
             else:
                 engagement = campaign.get('click', 0)
             
-            # Sent day - use campaign_start_time if available, otherwise use start_date
-            campaign_start_time = campaign.get('campaign_start_time', '')
-            if campaign_start_time:
-                # Extract just the date part (YYYY-MM-DD) from datetime string
-                sent_day = campaign_start_time.split('T')[0] if 'T' in campaign_start_time else campaign_start_time[:10]
+            # Sent day - for transactional, show period range; for promotional, show campaign_start_time
+            if nature == 'Transactional':
+                # Transactional campaigns are live continuously, show the analysis period
+                sent_day = f"{start_date} to {end_date}"
             else:
-                sent_day = start_date
+                # Promotional campaigns have a specific sent date
+                campaign_start_time = campaign.get('campaign_start_time', '')
+                if campaign_start_time:
+                    # Extract just the date part (YYYY-MM-DD) from datetime string
+                    sent_day = campaign_start_time.split('T')[0] if 'T' in campaign_start_time else campaign_start_time[:10]
+                else:
+                    sent_day = start_date
             
             writer.writerow([campaign_name, sent_day, nature, sent, engagement])
         
