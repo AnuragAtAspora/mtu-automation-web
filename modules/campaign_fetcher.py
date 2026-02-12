@@ -391,6 +391,7 @@ class CampaignFetcher:
             return all_campaigns
         
         print(f"Fetching stats for {len(transactional_list)} transactional campaigns...")
+        print(f"Date range for transactional stats: {start_date} to {end_date}")
         
         # Get campaign IDs
         campaign_ids = [c['campaign_id'] for c in transactional_list]
@@ -398,6 +399,7 @@ class CampaignFetcher:
         # Fetch stats in batches of 10
         for i in range(0, len(campaign_ids), 10):
             batch_ids = campaign_ids[i:i+10]
+            print(f"Fetching batch {i//10 + 1}: {len(batch_ids)} campaigns for period {start_date} to {end_date}")
             stats_batch = self.fetch_campaign_stats_batch(batch_ids, start_date, end_date)
             
             # Match stats with campaigns
@@ -579,7 +581,8 @@ class CampaignFetcher:
                 "metric_type": "TOTAL"
             }
             
-            print(f"Stats API request: {len(campaign_ids[:10])} campaigns, dates: {start_date} to {end_date}")
+            print(f"Stats API batch request: {len(campaign_ids[:10])} campaigns, dates: {start_date} to {end_date}")
+            print(f"Payload: campaign_ids={campaign_ids[:10][:2]}... (showing first 2), start_date={start_date}, end_date={end_date}")
             
             response = requests.post(
                 self.stats_api_url,
